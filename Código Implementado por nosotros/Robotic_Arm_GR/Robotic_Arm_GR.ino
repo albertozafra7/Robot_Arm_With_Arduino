@@ -233,14 +233,15 @@ void reset_stepper1(){
     }
     else{ // Si el bumper se encuentra pulsado
       qlimit_1[0] = count_steps1*1.8/(GEAR_2*STEPS);  // Convertimos el número de pasos dados en el ángulo límite positivo
-      Serial.println(qlimit_1[0]);  //
-      exit1=false;
+      Serial.println(qlimit_1[0]);  // Guardamos el límite
+      exit1=false;  // Nos salimoss del bucle
     }
   }
   
-  steppers[1].setSpeed(-testSpeed);
+  steppers[1].setSpeed(-testSpeed); // Ponemos la velocidad negativa, para que gire hacia la izquierda
   delay(2000);
   
+  // Se repite el mismo bucle
   while(exit2){
     if(digitalRead(pin1)==LOW){
       steppers[1].step();
@@ -248,7 +249,7 @@ void reset_stepper1(){
       count_steps2++;
     }
     else{
-      qlimit_1[1] = -(count_steps2-count_steps1)*1.8/(GEAR_2*STEPS);
+      qlimit_1[1] = -(count_steps2-count_steps1)*1.8/(GEAR_2*STEPS);  // ----------> Atento con el signo negativo
       Serial.println(qlimit_1[1]);
       exit2=false;
     }
