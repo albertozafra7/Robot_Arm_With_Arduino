@@ -328,12 +328,18 @@ void reset_stepper2(){
 
 
 //Punto inicial y vuelta a la posición de home
-void setHome(){
- 
+void setHome(double x,double y,double z){
+  home.x = x;
+  home.y = y;
+  home.z = z;
+}
+
+void setHome(Vector3 h){
+  home = h;
 }
 
 void goHome(){
-
+  moveToPoint(home);
 }
 
 
@@ -360,8 +366,8 @@ Vector3 forwardKinematics (float q1, float q2, float q3){ // Cinematica directa
 
 
 //Cinemática inversa. Movimiento en x,y,z
-void moveToPoint(float x,float y,float z){
- 
+void moveToPoint(Vector3 point){
+  
 }
 
 Vector3 inverseKinematics(float x,float y,float z){
