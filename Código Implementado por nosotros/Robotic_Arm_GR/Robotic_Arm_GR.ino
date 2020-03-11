@@ -54,6 +54,9 @@ int currentAcceleration = 1000; // Aceleración actualmente usada
 // Definimos los pines que se van a usar para los bumpers
 int pin1, pin2;
 
+// Definimos la variable home
+Vector3 home = {0.0, 0.0, 0.0};
+
 //************************************* Aquí comienza el código principal *************************************
 void setup() {
   
