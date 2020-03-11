@@ -42,6 +42,8 @@ int sensor1, sensor2; // Definimos los Bumpers
 Vector3 vectorToAngles(float x,float y,float z);  // Función que le adjudica a un vector 3D devuelto los valores pasados por parámetro
 void setSpeed(float speed); // Función que settea la velocidad actual a la pasada por parámetro
 
+void move_steps(int motor_index, int steps);
+
 // Parámetros, NO CAMBIAR
 int testSpeed = 200;  // Velocidad de prueba
 int testAcceleration = 300; // Aceleración de prueba
@@ -209,11 +211,30 @@ float stringToFloat(String s){
 
 //******FUNCIONES A IMPLEMENTAR POR EL GRUPO DE ALUMNOS****//
 
+void move_steps(int motor_index, int steps){
+  for (int i = 0; i<abs(steps); i++){
+    steppers[motor_index].step();
+    delay(10);
+  }
+}
+
+
 //Busqueda de límites del robot
 
 //Límites eje 1 - establecerlo en -90,90
-void reset_stepper0(){
- 
+
+//90/1.8 = 50, 180/1.8 = 100
+void reset_stepper0(float qlim[2]){  
+  move_steps(0,qlim[0]*GEAR_2*STEPS/1.8);
+
+  steppers[0].setSpeed(-testSpeed);
+  delay(2000);
+
+  move_steps(0,qlim[0]*GEAR_2*STEPS/1.8);
+  move_steps(0,qlim[1]*GEAR_2*STEPS/1.8);
+  
+  steppers[0].setSpeed(testSpeed);
+  delay(2000);
 }
 
 //Límites eje 2 - ejemplo
