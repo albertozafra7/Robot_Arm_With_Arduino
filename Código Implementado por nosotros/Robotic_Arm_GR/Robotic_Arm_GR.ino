@@ -219,21 +219,21 @@ void reset_stepper0(){
 //Límites eje 2 - ejemplo
 void reset_stepper1(){
   
-  int count_steps1 = 0;
-  int count_steps2 = 0;
-  steppers[1].setSpeed(testSpeed);
+  int count_steps1 = 0; // Cuenta el número de pasos girando hacia la derecha
+  int count_steps2 = 0; // Cuenta el número de pasos girando hacia la izquierda
+  steppers[1].setSpeed(testSpeed);  // Situamos la velocidad de dicho motor positiva, para que gire hacia la derecha
   bool exit1=true;
   bool exit2=true;
   
   while(exit1){
-    if(digitalRead(pin1)==LOW){
-      steppers[1].step();
+    if(digitalRead(pin1)==LOW){ // Si el bumper no se encuentra pulsado
+      steppers[1].step(); // Movemos un paso el motor
       delay(10);
-      count_steps1++;
+      count_steps1++; // Aumentamos el número de pasos que se han dado para llegar
     }
-    else{
-      qlimit_1[0] = count_steps1*1.8/(GEAR_2*STEPS);
-      Serial.println(qlimit_1[0]);
+    else{ // Si el bumper se encuentra pulsado
+      qlimit_1[0] = count_steps1*1.8/(GEAR_2*STEPS);  // Convertimos el número de pasos dados en el ángulo límite positivo
+      Serial.println(qlimit_1[0]);  //
       exit1=false;
     }
   }
