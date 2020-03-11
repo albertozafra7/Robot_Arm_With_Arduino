@@ -6,7 +6,7 @@ Servo svs[1] = {Servo()}; // Se mete el servo de la pinza
 MeStepperOnBoard steppers[3] = {MeStepperOnBoard(PORT_1),MeStepperOnBoard(PORT_2),MeStepperOnBoard(PORT_3)};  // Se crean tres objetos de los steppers
 
 // Limites de las articulaciones
-float qlimit_0[2] = {0.0,0.0}; //ToDo
+float qlimit_0[2] = {-90,90}; //ToDo
 float qlimit_1[2] = {0.0,0.0}; //ToDo
 float qlimit_2[2] = {0.0,0.0}; //ToDo
 
