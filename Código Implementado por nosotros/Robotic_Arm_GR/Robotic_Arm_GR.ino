@@ -228,13 +228,13 @@ void move_steps(int motor_index, int steps){
 
 //90/1.8 = 50, 180/1.8 = 100
 void reset_stepper0(float qlim[2]){  
-  move_steps(0,qlim[0]*GEAR_2*STEPS/1.8);
+  move_steps(0,qlim[0]*GEAR_1*STEPS/1.8);
 
   steppers[0].setSpeed(-testSpeed);
   delay(2000);
 
-  move_steps(0,qlim[0]*GEAR_2*STEPS/1.8);
-  move_steps(0,qlim[1]*GEAR_2*STEPS/1.8);
+  move_steps(0,qlim[0]*GEAR_1*STEPS/1.8);
+  move_steps(0,qlim[1]*GEAR_1*STEPS/1.8);
   
   steppers[0].setSpeed(testSpeed);
   delay(2000);
@@ -348,19 +348,51 @@ void goHome(){
 
 //Cinemática directa. Movimiento en q1,q2,q3, en grados
 void move_q1(float q1){
-
+  
+  if ( (q1 <= qlim[1]) && (q1 >= qlim[0])){   //Límite qlim = [-90,90]
+    
+    if(q1<0.0)
+      steppers[0].setSpeed(-currentSpeed);
+    else
+      steppers[0].setSpeed(currentSpeed);
+   
+    move_steps(0,q1*GEAR_1*STEPS/1.8);
+    //delay(2000); No se si hay que ponerlo
+  } 
 }
 
 void move_q2(float q2){
-  
+
+    if ( (q2 <= qlimit_1[0]) && (q2 >= qlimit_1[1])){   //Límite qlimit = [+,-]
+    
+    if(q2<0.0)
+      steppers[0].setSpeed(-currentSpeed);
+    else
+      steppers[0].setSpeed(currentSpeed);
+   
+    move_steps(0,q2*GEAR_2*STEPS/1.8);
+    //delay(2000); No se si hay que ponerlo
+  }   
 }
 
 void move_q3(float q3){
-  
+     
+    if ( (q3 <= qlimit_2[0]) && (q3 >= qlimit_2[1])){   //Límite qlimit = [+,-]
+    
+    if(q3<0.0)
+      steppers[0].setSpeed(-currentSpeed);
+    else
+      steppers[0].setSpeed(currentSpeed);
+   
+    move_steps(0,q2*GEAR_2*STEPS/1.8);
+    //delay(2000);
+  }  
 }
 
 void moveToAngles(float q1, float q2, float q3){ // mover los 3 a una posicion
-  
+  move_q1(q1);
+  move_q2(q2);
+  move_q3(q3);
 }
 
 Vector3 forwardKinematics (float q1, float q2, float q3){ // Cinematica directa
