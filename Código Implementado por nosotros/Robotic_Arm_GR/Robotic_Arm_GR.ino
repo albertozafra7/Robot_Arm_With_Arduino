@@ -57,6 +57,9 @@ int pin1, pin2;
 // Definimos la variable home
 Vector3 home = {0.0, 0.0, 0.0};
 
+// Definimos la variable que guarda si la tarea a realizar es la predeterminada o no
+bool default = false;
+
 //************************************* Aquí comienza el código principal *************************************
 void setup() {
   
@@ -160,6 +163,16 @@ void parseBuffer() {  // Coje la cadena, le quita los espacios y la filtra
     else if(tmp.indexOf("close",0)>-1){
       closeEnable = true;
     }
+    
+    //******* Edición del parse buffer para el pick&place *******
+    
+    else if(tmp.indexOf("y",0)>-1){
+      default = true;
+    }
+    else if(tmp.indexOf("n",0)>-1){
+      default = false;
+    }
+    
     count++;
     
     if (endIndex == len - 1) break; // Fin del While
@@ -441,7 +454,6 @@ Vector3 inverseKinematics(float x,float y,float z){
   return q; 
 }
 
-
 //Trayectoria y tarea p&p
 void trajectory (float q1, float q2, float q3, float t){
   
@@ -449,4 +461,30 @@ void trajectory (float q1, float q2, float q3, float t){
 
 void pick_and_place (){ // Tarea
 
+  // Enviamos un mensaje inicial
+  Serial.println("¿Desea realizar la operacion por defecto? (Y/N): ");
+  // Leemos la respuesta
+  Read();
+
+  if(default)
+    defaultPick();
+  else
+    designedPick();
+}
+
+
+//********************************************** Funciones extras **********************************************
+
+// Función que lee el los mensajes de pick&place
+void Read(){
+  char c; // Variable donde se va a ir evaluando carácter por carácter los mensajes enviados por Matlab
+  
+  while(Serial.available() <= 0){}
+  while(Serial.available() > 0){
+    c = Serial.read();  // Leo lo que hay
+    if (c == '\n')  // Si lo que leo es un intro
+      parseBuffer();  // Filtro el mensaje
+    else  // Si no
+      buffer += c;  // Introduzco en la variable buffer los datos
+  }
 }
