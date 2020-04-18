@@ -397,10 +397,10 @@ void moveToAngles(float q1, float q2, float q3){ // mover los 3 a una posicion
 
 Vector3 forwardKinematics (float q1, float q2, float q3){ // Cinematica directa
   Vector3 effector;
-  float r=L2*sin(q2)+(L3+65)*sin(q3+q2+0.1682);
+  float r=L2*sin(q2)+(268.7936)*sin(q3+q2+0.1682);
   effector.x=r*cos(q1);
   effector.y=r*sin(q1);
-  effector.z=L1+L2*cos(q2)+(L3+65)*cos(q3+q2+0.1682);
+  effector.z=L1+L2*cos(q2)+(268.7936)*cos(q3+q2+0.1682);
   return effector;
 }
 
