@@ -1,6 +1,8 @@
 #include "MeMegaPi.h"
 #include <Servo.h>
 
+//************************************* Declaración de las variables a utilizar *************************************
+
 MePort limitSwitch(PORT_7); // Metemos el switch de los finales de carrera
 Servo svs[1] = {Servo()}; // Se mete el servo de la pinza
 MeStepperOnBoard steppers[3] = {MeStepperOnBoard(PORT_1),MeStepperOnBoard(PORT_2),MeStepperOnBoard(PORT_3)};  // Se crean tres objetos de los steppers
@@ -59,6 +61,44 @@ Vector3 home = {0.0, 0.0, 0.0};
 
 // Definimos la variable que guarda si la tarea a realizar es la predeterminada o no
 bool default = false;
+
+
+//************************************* Declaración de los prototipos de las funciones *************************************
+
+//----------- Funciones preestablecidas -----------
+void parseBuffer(); // Filtra los mensajes recibidos por el monitor serie
+void setSpeedConfiguration(float c_speed, float max_speed, float accel); // Configuración de la velocidad de los motores
+void runServo(int index,int angle); // Movimiento de un servo un determinado ángulo
+void close_grip();  // Cierre de la pinza situada en la muñeca del robot
+void open_grip();   // Apertura de la pinza situada en el actuador final
+float stringToFloat(String s);  // Conversión de una cadena de carácteres a una variable tipo float
+
+
+//----------- Funciones desarrolladas -----------
+void move_steps(int motor_index, int steps);  // Movimiento de un motor paso a paso un número determinado de pasos
+void reset_stepper0(float qlim[2]);   // Establecemos los límites del motor situado en el primer eje
+void reset_stepper1();  // Establecemos los límites del motor situado en el segundo eje
+void reset_stepper2();  // Establecemos los límites del motor situado en el tercer eje
+void setHome(double x,double y,double z); // Establecemos nuestro sistema de referencia
+void setHome(Vector3 h);  // Sobrecarga del setHome
+void goHome();  // Posicionamiento del robot en el origen del sistema de referencia previamente establecido
+void move_q1(float q1); // Movimiento del primer eje a la posición angular q1
+void move_q2(float q2); // Movimiento del segundo eje a la posición angular q2
+void move_q3(float q3); // Movimiento del tercer eje a la posición angular q3
+void moveToAngles(float q1, float q2, float q3);  // Movimiento de los tres ejes a unas posiciones angulares preestablecidas
+Vector3 forwardKinematics (float q1, float q2, float q3); // Cálculo de la cinemática directa del robot
+void moveToPoint(Vector3 point);  // Movimiento de los tres ejes del robot para que el actuador final se encuentre en unas coordenadas específicas
+Vector3 inverseKinematics(float x,float y,float z); // Cálculo de la cinemática inversa del robot
+void trajectory (float q1, float q2, float q3, float t);  // Función que mueve el robot a una posición angular síncronamente
+void pick_and_place (); // Función que realiza una tarea específica
+
+
+//----------- Funciones desarrolladas como apoyo -----------
+void Read();  // Lectura de los mensajes pasados por el monitor serie
+void defaultPick(); // Realización de la tarea predeterminada
+void designedPick(); // Realización de una tarea definida por el usuario
+
+
 
 //************************************* Aquí comienza el código principal *************************************
 void setup() {
