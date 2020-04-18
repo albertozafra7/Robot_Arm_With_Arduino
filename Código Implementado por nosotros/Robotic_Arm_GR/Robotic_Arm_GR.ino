@@ -407,11 +407,38 @@ Vector3 forwardKinematics (float q1, float q2, float q3){ // Cinematica directa
 
 //Cinemática inversa. Movimiento en x,y,z
 void moveToPoint(Vector3 point){
-  
+  // Básicamente se calcula la cinemática inversa del punto
+  Vector3 q = inverseKinematics(point.x,point.y,point.z);
+
+  // Y movemos a dichos ángulos
+  moveToAngles(q.x,q.y,q.z);
 }
 
+// Calculamos la cinemática inversa
 Vector3 inverseKinematics(float x,float y,float z){
- 
+  // Generamos el vector que se va a devolver
+  Vector3 q;
+
+  // Calculamos la posición angular del primer eje
+  q.x = atan(y/x);  // q1 = arcotangente(y/x)
+
+  // Calculamos el coseno de q3, mediante el teorema del coseno y el teorema de pitágoras
+  // El teorema del coseno es el siguiente: c^2 = a^2 + b^2 - a*b*cos(a^b)
+  float cosq3 = (x^2 + y^2 + z^2 - l2^2 - l3^2)/(2*l2*l3);
+
+  // Calculamos la posición angular del tercer eje, mediante el coseno y el seno de dicha posición
+  // tan(q3) = sen(q3)/cos(q3), habiendo calculado anteriormente el coseno de q3 y obteniendo el seno a partir de la identidad trigonométrica sen^2 + cos^2 = 1
+  q.z = atan(sqrt(1-cosq3^2)/cosq3);  // q3 = arcotangente(seno(q3)/coseno(q3))
+
+  // Finalmente obtenemos la posición angular del segundo eje
+  // Por medio de la resta de 2 ángulos, alfa y beta
+
+  // Siendo alfa = atan(z/(sqrt(x^2+y^2)))
+  // Beta = atan((l3*sin(atan(sqrt(1-cosq3^2)/cosq3)))/(l2+l3*cosq3))
+  // q2 = alfa - beta
+  q.y = atan(z/(sqrt(x^2+y^2)))-atan((l3*(sqrt(1-cosq3^2)/cosq3))/(l2+l3*cosq3)); // Dependiendo de si el valor de la raíz cuadrada contenida en alfa, se puede obtener la posición de codo arriba o codo abajo
+
+  return q; 
 }
 
 
