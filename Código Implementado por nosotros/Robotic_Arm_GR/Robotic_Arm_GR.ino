@@ -488,3 +488,13 @@ void Read(){
       buffer += c;  // Introduzco en la variable buffer los datos
   }
 }
+
+// Función que realiza la tarea predeterminada
+void defaultPick(){
+  
+}
+
+// Función que realiza una tarea específica
+void designedPick(){
+  
+}
