@@ -521,48 +521,36 @@ Vector3 inverseKinematics(float x,float y,float z){
 //Trayectoria y tarea p&p
 void trajectory (float q1, float q2, float q3, float t){
   // Generamos las variables que guardaran las posiciones actuales de los ejes
-  float pos1, pos2, pos3;
-  pos1 = steppers[0].currentPosition();
-  pos2 = steppers[1].currentPosition();
-  pos3 = steppers[2].currentPosition();
+  float pos[3];
+  pos[0] = steppers[0].currentPosition();
+  pos[1] = steppers[1].currentPosition();
+  pos[2] = steppers[2].currentPosition();
 
   // Calculamos las velocidades
-  float speed1, speed2, speed3;
-  speed1 = (q1-pos1)/t;
-  speed2 = (q2-pos2)/t;
-  speed3 = (q3-pos3)/t;
+  float trajectSpeed[3];
+  trajectSpeed[0] = (q1-pos[0])/t;
+  trajectSpeed[1] = (q2-pos[1])/t;
+  trajectSpeed[2] = (q3-pos[2])/t;
 
   // Calculamos las aceleraciones
-  float accel1, accel2, accel3;
-  accel1 = speed1/t;
-  accel2 = speed2/t;
-  accel3 = speed3/t;
+  float trajectAccel[3];
+  trajectAccel[0] = trajectSpeed[0]/t;
+  trajectAccel[1] = trajectSpeed[1]/t;
+  trajectAccel[2] = trajectSpeed[2]/t;
 
-  
-  
-  if(pos1 >= q1 && pos2 >= q2 && pos3 >= q3){ // Si nos encontramos en una posición superior a la deseada, es preciso decrementar hasta llegar
-    while(pos1 > q1+0.00005 || pos2 > q2+0.00005 || pos3 > q3+0.00005){
-      pos1 = steppers[0].currentPosition();
-      pos2 = steppers[1].currentPosition();
-      pos3 = steppers[2].currentPosition();
-      
-      move_q1((pos1-q1)/t);
-      move_q2((pos2-q2)/t);
-      move_q3((pos3-q3)/t);
-    }
-  } else if(pos1 <= q1 && pos2 <= q2 && pos3 <= q3){  // Si nos encontramos en una posición inferior a la deseada, es preciso incrementar hasta llegar
-    while (pos1 < q1-0.00005 || pos2 < q2-0.00005 || pos3 < q3-0.00005){
-      pos1 = steppers[0].currentPosition();
-      pos2 = steppers[1].currentPosition();
-      pos3 = steppers[2].currentPosition();
-      
-      move_q1((q1-pos1)/t);
-      move_q2((q2-pos2)/t);
-      move_q3((q3-pos3)/t);
-    }
+  // Establecemos las velocidades y aceleraciones del robot
+  for(int i=0;i<3;i++){
+    steppers[i].setSpeed(trajectSpeed[i]);
+    steppers[i].setAcceleration(trajectAccel[i]);
   }
-    
-    
+
+  // Movemos el robot a dichos ángulos
+  move_q1(q1);
+  move_q2(q2);
+  move_q3(q3);
+
+  // Reestablecemos las velocidades y aceleraciones
+  setSpeedConfiguration(currentSpeed,maxSpeed,currentAcceleration);
 }
 
 void pick_and_place (){ // Tarea
@@ -969,44 +957,34 @@ void Trim(size_t count, Vector3* Passes, size_t* capacity){
 //Trayectoria y tarea p&p
 void trajectory (Vector3 q, float t){
   // Generamos las variables que guardaran las posiciones actuales de los ejes
-  float pos1, pos2, pos3;
-  pos1 = steppers[0].currentPosition();
-  pos2 = steppers[1].currentPosition();
-  pos3 = steppers[2].currentPosition();
+  float pos[3];
+  pos[0] = steppers[0].currentPosition();
+  pos[1] = steppers[1].currentPosition();
+  pos[2] = steppers[2].currentPosition();
 
   // Calculamos las velocidades
-  float speed1, speed2, speed3;
-  speed1 = (q.x-pos1)/t;
-  speed2 = (q.y-pos2)/t;
-  speed3 = (q.z-pos3)/t;
+  float trajectSpeed[3];
+  trajectSpeed[0] = (q.x-pos[0])/t;
+  trajectSpeed[1] = (q.y-pos[1])/t;
+  trajectSpeed[2] = (q.z-pos[2])/t;
 
   // Calculamos las aceleraciones
-  float accel1, accel2, accel3;
-  accel1 = speed1/t;
-  accel2 = speed2/t;
-  accel3 = speed3/t;
+  float trajectAccel[3];
+  trajectAccel[0] = trajectSpeed[0]/t;
+  trajectAccel[1] = trajectSpeed[1]/t;
+  trajectAccel[2] = trajectSpeed[2]/t;
 
-  
-  
-  if(pos1 >= q.x && pos2 >= q.y && pos3 >= q.z){ // Si nos encontramos en una posición superior a la deseada, es preciso decrementar hasta llegar
-    while(pos1 > q.x+0.00005 || pos2 > q.y+0.00005 || pos3 > q.z+0.00005){
-      pos1 = steppers[0].currentPosition();
-      pos2 = steppers[1].currentPosition();
-      pos3 = steppers[2].currentPosition();
-      
-      move_q1((pos1-q.x)/t);
-      move_q2((pos2-q.y)/t);
-      move_q3((pos3-q.z)/t);
-    }
-  } else if(pos1 <= q.x && pos2 <= q.y && pos3 <= q.z){  // Si nos encontramos en una posición inferior a la deseada, es preciso incrementar hasta llegar
-    while (pos1 < q.x-0.00005 || pos2 < q.y-0.00005 || pos3 < q.z-0.00005){
-      pos1 = steppers[0].currentPosition();
-      pos2 = steppers[1].currentPosition();
-      pos3 = steppers[2].currentPosition();
-      
-      move_q1((q.x-pos1)/t);
-      move_q2((q.y-pos2)/t);
-      move_q3((q.z-pos3)/t);
-    }
-  }   
+  // Establecemos las velocidades y aceleraciones del robot
+  for(int i=0;i<3;i++){
+    steppers[i].setSpeed(trajectSpeed[i]);
+    steppers[i].setAcceleration(trajectAccel[i]);
+  }
+
+  // Movemos el robot a dichos ángulos
+  move_q1(q.x);
+  move_q2(q.y);
+  move_q3(q.z);
+
+  // Reestablecemos las velocidades y aceleraciones
+  setSpeedConfiguration(currentSpeed,maxSpeed,currentAcceleration);
 }
