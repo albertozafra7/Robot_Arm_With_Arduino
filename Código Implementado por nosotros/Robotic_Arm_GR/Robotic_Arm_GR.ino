@@ -62,6 +62,9 @@ Vector3 home = {0.0, 0.0, 0.0};
 // Definimos la variable que guarda si la tarea a realizar es la predeterminada o no
 bool pick = false;
 
+// Definimos la variable que guarda el modo de introducción de los datos
+bool cart = false;
+
 
 //************************************* Declaración de los prototipos de las funciones *************************************
 
@@ -97,6 +100,7 @@ void pick_and_place (); // Función que realiza una tarea específica
 void Read();  // Lectura de los mensajes pasados por el monitor serie
 void defaultPick(); // Realización de la tarea predeterminada
 void designedPick(); // Realización de una tarea definida por el usuario
+float dataRead(); // Lectura de los datos pasados a pick&place utilizados en designedPick()
 
 
 
@@ -206,11 +210,17 @@ void parseBuffer() {  // Coje la cadena, le quita los espacios y la filtra
     
     //******* Edición del parse buffer para el pick&place *******
     
-    else if(tmp.indexOf("y",0)>-1){
+    else if(tmp.indexOf("y",0)>-1){ // El usuario desea realizar la tarea predeterminada
       pick = true;
     }
-    else if(tmp.indexOf("n",0)>-1){
+    else if(tmp.indexOf("n",0)>-1){ // El usuario desea realizar una tarea específica
       pick = false;
+    }
+    else if((tmp.indexOf("coord",0)>-1) || tmp.indexOf("cart",0)>-1) || tmp.indexOf("cord",0)>-1)) {
+      cart = true;
+    }
+    else if((tmp.indexOf("ang",0)>-1) || tmp.indexOf("pos",0)>-1)) {
+      cart = false;
     }
     
     count++;
@@ -515,7 +525,7 @@ void pick_and_place (){ // Tarea
 
 //********************************************** Funciones extras **********************************************
 
-// Función que lee el los mensajes de pick&place
+// Función que lee los mensajes de pick&place
 void Read(){
   char c; // Variable donde se va a ir evaluando carácter por carácter los mensajes enviados por Matlab
   
@@ -580,5 +590,53 @@ void defaultPick(){
 
 // Función que realiza una tarea específica
 void designedPick(){
+  // Se generan los vectores que van a contener las posiciones de la tarea
+  Vector3 origin; // La posición donde se debe coger el objeto
+  Vector3 finalpos; // La posición donde se debe de dejar el objeto
+
+  // Se pregunta cómo se desean introducir las coordenadas del punto
+  Serial.println("¿Desea trabajar con posiciones angulares o con coordenadas cartesianas? (ang/coord): ");
+
+  // Se lee la respuesta
+  Read();
+
+  if(cart) {  // Si se trabaja con coordenadas cartesianas
+
+    // Se pregunta por dichas coordenadas
+    Serial.println("Introduzca las coordenadas cartesianas donde se va a colocar el objeto: ");
+    
+    // Posición X
+    Serial.println("X = ");
+    origin.x = dataRead();
+    
+
+    // Posición Y
+    Serial.println("Y = ");
+    origin.y = dataRead();
+
+    // Posición Z
+    Serial.println("Z = ");
+    origin.z = dataRead();
+
+  }
+    
   
+}
+
+// Función que lee los valores de pick&place
+float dataRead(){
+  float data = 0; // Variable que guarda el valor introducido
+  char c; // Variable donde se va a ir evaluando carácter por carácter los mensajes enviados por Matlab
+  
+  while(Serial.available() <= 0){}
+  while(Serial.available() > 0){
+    c = Serial.read();  // Leo lo que hay
+    if (c == '\n'){  // Si lo que leo es un intro
+      data = stringToFloat(buffer);
+      buffer = "";
+    }else  // Si no
+      buffer += c;  // Introduzco en la variable buffer los datos
+  }
+
+  return data;
 }
