@@ -225,9 +225,9 @@ void parseBuffer() {  // Coje la cadena, le quita los espacios y la filtra
       pick = true;
     else if(tmp.indexOf("n",0)>-1 && !StepAsk) // El usuario desea realizar una tarea específica
       pick = false;
-    else if((tmp.indexOf("coord",0)>-1) || tmp.indexOf("cart",0)>-1) || tmp.indexOf("cord",0)>-1))  // El usuario debe introducir las coordenadas cartesianas en la tarea específica
+    else if((tmp.indexOf("coord",0)>-1) || (tmp.indexOf("cart",0)>-1) || (tmp.indexOf("cord",0)>-1))  // El usuario debe introducir las coordenadas cartesianas en la tarea específica
       cart = true;
-    else if((tmp.indexOf("ang",0)>-1) || tmp.indexOf("pos",0)>-1))  // El usuario debe introducir las posiciones articulares en la tarea específica
+    else if((tmp.indexOf("ang",0)>-1) || (tmp.indexOf("pos",0)>-1))  // El usuario debe introducir las posiciones articulares en la tarea específica
       cart = false;
     else if(tmp.indexOf("y",0)>-1 && StepAsk) // El usuario desea introducir un paso intermedio en la tarea específica
       MustPass = true;
