@@ -349,7 +349,7 @@ void goHome(){
 //Cinemática directa. Movimiento en q1,q2,q3, en grados
 void move_q1(float q1){
   
-  if ( (q1 <= qlim[1]) && (q1 >= qlim[0])){   //Límite qlim = [-90,90]
+  if ( (q1 <= qlimit_0[1]) && (q1 >= qlimit_0[0])){   //Límite qlim = [-90,90]
     
     if(q1<0.0)
       steppers[0].setSpeed(-currentSpeed);
