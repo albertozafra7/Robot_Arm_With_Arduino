@@ -65,6 +65,12 @@ bool pick = false;
 // Definimos la variable que guarda el modo de introducción de los datos
 bool cart = false;
 
+// Definimos la variable que guarda si el robot se encuentra preguntando por la introducción de una posición intermedia
+bool StepAsk = false;
+
+// Definimos la variable que guarda si el robot debe pasar por una posición intermedia
+bool MustPass = false;
+
 
 //************************************* Declaración de los prototipos de las funciones *************************************
 
@@ -95,12 +101,16 @@ Vector3 inverseKinematics(float x,float y,float z); // Cálculo de la cinemátic
 void trajectory (float q1, float q2, float q3, float t);  // Función que mueve el robot a una posición angular síncronamente
 void pick_and_place (); // Función que realiza una tarea específica
 
-
 //----------- Funciones desarrolladas como apoyo -----------
 void Read();  // Lectura de los mensajes pasados por el monitor serie
 void defaultPick(); // Realización de la tarea predeterminada
 void designedPick(); // Realización de una tarea definida por el usuario
 float dataRead(); // Lectura de los datos pasados a pick&place utilizados en designedPick()
+void AddPos(Vector3*, size_t*, size_t*);  // Añade una posición intermedia a la tarea específica, en designedPick()
+void AddPosAng(Vector3*, size_t *capacity, size_t *count);  // Añade una posición intermedia a la tarea específica, pero con posiciones angulares
+void resize(size_t, Vector3*, size_t*, size_t); // Redimensiona el array de posiciones intermedias utilizado en designedPick()
+void Remove(Vector3*,size_t *); // Eliminar el último elemento que contiene el array
+void Trim(size_t, Vector3*, size_t*); // Reducción del array que contiene las posiciones intermedias de la tarea específica
 
 
 
@@ -210,18 +220,18 @@ void parseBuffer() {  // Coje la cadena, le quita los espacios y la filtra
     
     //******* Edición del parse buffer para el pick&place *******
     
-    else if(tmp.indexOf("y",0)>-1){ // El usuario desea realizar la tarea predeterminada
+    else if(tmp.indexOf("y",0)>-1 && !StepAsk) // El usuario desea realizar la tarea predeterminada
       pick = true;
-    }
-    else if(tmp.indexOf("n",0)>-1){ // El usuario desea realizar una tarea específica
+    else if(tmp.indexOf("n",0)>-1 && !StepAsk) // El usuario desea realizar una tarea específica
       pick = false;
-    }
-    else if((tmp.indexOf("coord",0)>-1) || tmp.indexOf("cart",0)>-1) || tmp.indexOf("cord",0)>-1)) {
+    else if((tmp.indexOf("coord",0)>-1) || tmp.indexOf("cart",0)>-1) || tmp.indexOf("cord",0)>-1))  // El usuario debe introducir las coordenadas cartesianas en la tarea específica
       cart = true;
-    }
-    else if((tmp.indexOf("ang",0)>-1) || tmp.indexOf("pos",0)>-1)) {
+    else if((tmp.indexOf("ang",0)>-1) || tmp.indexOf("pos",0)>-1))  // El usuario debe introducir las posiciones articulares en la tarea específica
       cart = false;
-    }
+    else if(tmp.indexOf("y",0)>-1 && StepAsk) // El usuario desea introducir un paso intermedio en la tarea específica
+      MustPass = true;
+    else if(tmp.indexOf("n",0)>-1 && StepAsk) // El usuario no desea introducir un paso intermedio en la tarea específica
+      MustPass = false;
     
     count++;
     
@@ -603,7 +613,9 @@ void designedPick(){
   if(cart) {  // Si se trabaja con coordenadas cartesianas
 
     // Se pregunta por dichas coordenadas
-    Serial.println("Introduzca las coordenadas cartesianas donde se va a colocar el objeto: ");
+
+    // Coordenadas donde se va a coger el objeto
+    Serial.println("Introduzca las coordenadas cartesianas donde se va a coger el objeto: ");
     
     // Posición X
     Serial.println("X = ");
@@ -618,8 +630,190 @@ void designedPick(){
     Serial.println("Z = ");
     origin.z = dataRead();
 
-  }
+
+    // Coordenadas donde se va a colocar el objeto
+    Serial.println("Introduzca las coordenadas cartesianas donde se va a colocar el objeto: ");
+
+    // Coordenada X
+    Serial.println("X = ");
+    finalpos.x = dataRead();
+
+    // Coordenada Y
+    Serial.println("Y = ");
+    finalpos.y = dataRead();
+
+    // Coordenada Z
+    Serial.println("Z = ");
+    finalpos.z = dataRead();
+
+
+    // Preguntamos si desea pasar por puntos intermedios
+    Serial.println("¿Desea introducir algún punto intermedio? (y/n):");
+
+    // Se establece el modo de introducción de una posición intermedia
+    StepAsk = true;
+    // Se lee la respuesta
+    Read();
+
+    if(MustPass){
+      // Creamos un array dinámico de posiciones por si el usuario desea introducir más de una posición intermedia
+      size_t capacity = 1; // Guarda la capacidad del array
+      size_t count = 0; // Guarda la posición del array en la que nos encontramos
+      Vector3* Passes = new Vector3[1];
+      
+      do {
+
+        // Añadimos una posición en el array
+        AddPos(Passes,&capacity,&count);
+        // Preguntamos si se desea introducir una nueva posición
+        Serial.println("¿Desea introducir otra posición intermedia?")
+
+      } while(MustPass);
+
+      // Reproducimos la tarea
+      goHome(); // Nos situamos en el home
+      open_grip();  // Abrimos la pinza
+      // Vamos a la posición donde se debe coger el objeto
+      trayectory(inverseKinematics(origin.x,origin.y,origin.z),5);
+      delay(10);
+      close_grip(); // Cerramos la pinza
+  
+      for(size_t i = 0; i < count; i++) // Pasamos por las posiciones intermedias
+        trayectory(inverseKinematics(Passes[i].x,Passes[i].y,Passes[i].z),5);
+  
+      // Nos situamos en la posición final
+      trayectory(inverseKinematics(finalpos.x,finalpos.y,finalpos.z),5);
+  
+      open_grip();  // Se coloca el objeto
+      delay(10);
+      goHome(); // Se vuelve al home
+
+      StepAsk = false;
+
+      size_t j = count; // Guardamos una copia del count
+      for(size_t i = 0; i < j; i++) // Borramos el array entero
+        Remove(Passes,&count,&capacity);
+
+    } else {  // Si no se poseen posiciones intermedias
+      // Reproducimos la tarea
+      goHome(); // Nos situamos en el home
+      open_grip();  // Abrimos la pinza
+      // Vamos a la posición donde se debe coger el objeto
+      trayectory(inverseKinematics(origin.x,origin.y,origin.z),5);
+      delay(10);
+      close_grip(); // Cerramos la pinza
+ 
+      // Nos situamos en la posición final
+      trayectory(inverseKinematics(finalpos.x,finalpos.y,finalpos.z),5);
+  
+      open_grip();  // Se coloca el objeto
+      delay(10);
+      goHome(); // Se vuelve al home
+
+    }
+
+  } else {  // Si se realiza con posiciones angulares
     
+    // Se pregunta por dichas posiciones angulares
+
+    // Coordenadas donde se va a coger el objeto
+    Serial.println("Introduzca las posiciones angulares que va a tener el robot para poder coger el objeto: ");
+    
+    // Posición del eje 1
+    Serial.println("q1 = ");
+    origin.x = dataRead();
+    
+
+    // Posición del eje 2
+    Serial.println("q2 = ");
+    origin.y = dataRead();
+
+    // Posición del eje 3
+    Serial.println("q3 = ");
+    origin.z = dataRead();
+
+
+    // Coordenadas donde se va a colocar el objeto
+    Serial.println("Introduzca las posiciones angulares que va a tener el robot para poder colocar el objeto: ");
+
+    // Posición del eje 1
+    Serial.println("q1 = ");
+    finalpos.x = dataRead();
+
+    // Posición del eje 2
+    Serial.println("q2 = ");
+    finalpos.y = dataRead();
+
+    // Posición del eje 3
+    Serial.println("q3 = ");
+    finalpos.z = dataRead();
+
+
+    // Preguntamos si desea pasar por puntos intermedios
+    Serial.println("¿Desea introducir algún punto intermedio? (y/n):");
+
+    // Se establece el modo de introducción de una posición intermedia
+    StepAsk = true;
+    // Se lee la respuesta
+    Read();
+
+    if(MustPass){
+      // Creamos un array dinámico de posiciones por si el usuario desea introducir más de una posición intermedia
+      size_t capacity = 1; // Guarda la capacidad del array
+      size_t count = 0; // Guarda la posición del array en la que nos encontramos
+      Vector3* Passes = new Vector3[1];
+      
+      do {
+
+        // Añadimos una posición en el array
+        AddPosAng(Passes,&capacity,&count);
+        // Preguntamos si se desea introducir una nueva posición
+        Serial.println("¿Desea introducir otra posición intermedia?")
+
+      } while(MustPass);
+
+      // Reproducimos la tarea
+      goHome(); // Nos situamos en el home
+      open_grip();  // Abrimos la pinza
+      // Vamos a la posición donde se debe coger el objeto
+      trayectory(origin.x,origin.y,origin.z,5);
+      delay(10);
+      close_grip(); // Cerramos la pinza
+  
+      for(size_t i = 0; i < count; i++) // Pasamos por las posiciones intermedias
+        trayectory(Passes[i].x,Passes[i].y,Passes[i].z,5);
+  
+      // Nos situamos en la posición final
+      trayectory(finalpos.x,finalpos.y,finalpos.z,5);
+  
+      open_grip();  // Se coloca el objeto
+      delay(10);
+      goHome(); // Se vuelve al home
+
+      StepAsk = false;  // Dejamos de preguntar por las posiciones intermedias
+
+      size_t j = count; // Guardamos una copia del count
+      for(size_t i = 0; i < j; i++) // Borramos el array entero
+        Remove(Passes,&count,&capacity);
+
+    } else {  // Si no se poseen posiciones intermedias
+      // Reproducimos la tarea
+      goHome(); // Nos situamos en el home
+      open_grip();  // Abrimos la pinza
+      // Vamos a la posición donde se debe coger el objeto
+      trayectory(origin.x,origin.y,origin.z,5);
+      delay(10);
+      close_grip(); // Cerramos la pinza
+ 
+      // Nos situamos en la posición final
+      trayectory(finalpos.x,finalpos.y,finalpos.z,5);
+  
+      open_grip();  // Se coloca el objeto
+      delay(10);
+      goHome(); // Se vuelve al home
+
+    }
+  }
   
 }
 
@@ -639,4 +833,89 @@ float dataRead(){
   }
 
   return data;
+}
+
+// Añade una posición intermedia
+void AddPos(Vector3* Passes, size_t *capacity, size_t *count){
+  // Incrementamos el contador
+  *count = *count+1;
+
+  // Si el contador es mayor que la capacidad
+  if (count > capacity){
+    // Redimensionamos el array
+    size_t newSize = (*capacity) * 2;
+    resize(newSize,Passes,capacity,*count);
+  } 
+ 
+ // Preguntamos por sus coordenadas
+ Serial.println("Introduzca sus coordenadas cartesianas: ");
+  
+ // Coordenada X
+ Serial.println("X = ");
+ Passes[*count-1].x = dataRead();
+  
+ // Coordenada Y
+ Serial.println("Y = ");
+ Passes[*count-1].y = dataRead();
+  
+ // Coordenada Z
+ Serial.println("Z = ");
+ Passes[*count-1].z = dataRead();
+}
+
+// Añade una posición intermedia
+void AddPosAng(Vector3* Passes, size_t *capacity, size_t *count){
+  // Incrementamos el contador
+  *count = *count+1;
+
+  // Si el contador es mayor que la capacidad
+  if (count > capacity){
+    // Redimensionamos el array
+    size_t newSize = (*capacity) * 2;
+    resize(newSize,Passes,capacity,*count);
+  } 
+ 
+ // Preguntamos por sus coordenadas
+ Serial.println("Introduzca sus posiciones angulares: ");
+  
+ // Posición angular del eje 1
+ Serial.println("q1 = ");
+ Passes[*count-1].x = dataRead();
+  
+ // Posición angular del eje 2
+ Serial.println("q2 = ");
+ Passes[*count-1].y = dataRead();
+  
+ // Posición angular del eje 3
+ Serial.println("Z = ");
+ Passes[*count-1].z = dataRead();
+}
+
+// Redimensionamiento del array de posiciones
+void resize(size_t newCapacity, Vector3* Passes, size_t* capacity, size_t count){
+
+  // Generamos un array de posiciones con la nueva capacidad
+  Vector3* newArray = new Vector3[newCapacity];
+  // Mocemos todo lo contenido en el array anterior de posiciones al nuevo
+  memmove(newArray, Passes, count  * sizeof(Vector3));
+  // Borramos todo lo contenido en el array anterior
+  delete[] Passes;
+  // Guardamos la nueva capacidad del array
+  *capacity = newCapacity;
+  // Guardamos en la dirección de memoria del anterior array el nuevo array
+  Passes = newArray;
+}
+
+// Eliminar el primer elemento del array
+void Remove(Vector3* Passes,size_t *count, size_t* capacity){
+  *count = *count - 1;  // Reducimos el contador
+
+  // Redimensionamos el array
+  Trim(*count,Passes,capacity);
+
+}
+ 
+// Reducción de la capacidad del array de posiciones
+void Trim(size_t count, Vector3* Passes, size_t* capacity){
+  resize(count,Passes,capacity,count);
 }
