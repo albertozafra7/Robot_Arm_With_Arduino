@@ -516,7 +516,49 @@ Vector3 inverseKinematics(float x,float y,float z){
 
 //Trayectoria y tarea p&p
 void trajectory (float q1, float q2, float q3, float t){
+  // Generamos las variables que guardaran las posiciones actuales de los ejes
+  float pos1, pos2, pos3;
+  pos1 = steppers[0].currentPosition();
+  pos2 = steppers[1].currentPosition();
+  pos3 = steppers[2].currentPosition();
+
+  // Calculamos las velocidades
+  float speed1, speed2, speed3;
+  speed1 = (q1-pos1)/t;
+  speed2 = (q2-pos2)/t;
+  speed3 = (q3-pos3)/t;
+
+  // Calculamos las aceleraciones
+  float accel1, accel2, accel3;
+  accel1 = speed1/t;
+  accel2 = speed2/t;
+  accel3 = speed3/t;
+
   
+  
+  if(pos1 >= q1 && pos2 >= q2 && pos3 >= q3){ // Si nos encontramos en una posición superior a la deseada, es preciso decrementar hasta llegar
+    while(pos1 > q1+0.00005 || pos2 > q2+0.00005 || pos3 > q3+0.00005){
+      pos1 = steppers[0].currentPosition();
+      pos2 = steppers[1].currentPosition();
+      pos3 = steppers[2].currentPosition();
+      
+      move_q1((pos1-q1)/t);
+      move_q2((pos2-q2)/t);
+      move_q3((pos3-q3)/t);
+    }
+  } else if(pos1 <= q1 && pos2 <= q2 && pos3 <= q3){  // Si nos encontramos en una posición inferior a la deseada, es preciso incrementar hasta llegar
+    while (pos1 < q1-0.00005 || pos2 < q2-0.00005 || pos3 < q3-0.00005){
+      pos1 = steppers[0].currentPosition();
+      pos2 = steppers[1].currentPosition();
+      pos3 = steppers[2].currentPosition();
+      
+      move_q1((q1-pos1)/t);
+      move_q2((q2-pos2)/t);
+      move_q3((q3-pos3)/t);
+    }
+  }
+    
+    
 }
 
 void pick_and_place (){ // Tarea
@@ -577,17 +619,17 @@ void defaultPick(){
   open_grip();
 
   // Se posiciona el robot en la posición donde tiene que coger el objeto, tiene que llegar en 5s
-  trayectory(q_origin.x,q_origin.y,q_origin.z,5);
+  trajectory(q_origin.x,q_origin.y,q_origin.z,5);
 
   // Se coge el objeto con la pinza
   delay(10);
   close_grip();
 
   // Se posiciona el robot en el punto intermedio
-  trayectory(q_step.x,q_step.y,q_step.z,5);
+  trajectory(q_step.x,q_step.y,q_step.z,5);
 
   // Se posiciona el robot en el punto final
-  trayectory(q_final.x,q_final.y,q_final.z,5);
+  trajectory(q_final.x,q_final.y,q_final.z,5);
 
   // Se coloca el objeto
   open_grip();
@@ -674,15 +716,15 @@ void designedPick(){
       goHome(); // Nos situamos en el home
       open_grip();  // Abrimos la pinza
       // Vamos a la posición donde se debe coger el objeto
-      trayectory(inverseKinematics(origin.x,origin.y,origin.z),5);
+      trajectory(inverseKinematics(origin.x,origin.y,origin.z),5);
       delay(10);
       close_grip(); // Cerramos la pinza
   
       for(size_t i = 0; i < count; i++) // Pasamos por las posiciones intermedias
-        trayectory(inverseKinematics(Passes[i].x,Passes[i].y,Passes[i].z),5);
+        trajectory(inverseKinematics(Passes[i].x,Passes[i].y,Passes[i].z),5);
   
       // Nos situamos en la posición final
-      trayectory(inverseKinematics(finalpos.x,finalpos.y,finalpos.z),5);
+      trajectory(inverseKinematics(finalpos.x,finalpos.y,finalpos.z),5);
   
       open_grip();  // Se coloca el objeto
       delay(10);
@@ -699,12 +741,12 @@ void designedPick(){
       goHome(); // Nos situamos en el home
       open_grip();  // Abrimos la pinza
       // Vamos a la posición donde se debe coger el objeto
-      trayectory(inverseKinematics(origin.x,origin.y,origin.z),5);
+      trajectory(inverseKinematics(origin.x,origin.y,origin.z),5);
       delay(10);
       close_grip(); // Cerramos la pinza
  
       // Nos situamos en la posición final
-      trayectory(inverseKinematics(finalpos.x,finalpos.y,finalpos.z),5);
+      trajectory(inverseKinematics(finalpos.x,finalpos.y,finalpos.z),5);
   
       open_grip();  // Se coloca el objeto
       delay(10);
@@ -776,15 +818,15 @@ void designedPick(){
       goHome(); // Nos situamos en el home
       open_grip();  // Abrimos la pinza
       // Vamos a la posición donde se debe coger el objeto
-      trayectory(origin.x,origin.y,origin.z,5);
+      trajectory(origin.x,origin.y,origin.z,5);
       delay(10);
       close_grip(); // Cerramos la pinza
   
       for(size_t i = 0; i < count; i++) // Pasamos por las posiciones intermedias
-        trayectory(Passes[i].x,Passes[i].y,Passes[i].z,5);
+        trajectory(Passes[i].x,Passes[i].y,Passes[i].z,5);
   
       // Nos situamos en la posición final
-      trayectory(finalpos.x,finalpos.y,finalpos.z,5);
+      trajectory(finalpos.x,finalpos.y,finalpos.z,5);
   
       open_grip();  // Se coloca el objeto
       delay(10);
@@ -801,12 +843,12 @@ void designedPick(){
       goHome(); // Nos situamos en el home
       open_grip();  // Abrimos la pinza
       // Vamos a la posición donde se debe coger el objeto
-      trayectory(origin.x,origin.y,origin.z,5);
+      trajectory(origin.x,origin.y,origin.z,5);
       delay(10);
       close_grip(); // Cerramos la pinza
  
       // Nos situamos en la posición final
-      trayectory(finalpos.x,finalpos.y,finalpos.z,5);
+      trajectory(finalpos.x,finalpos.y,finalpos.z,5);
   
       open_grip();  // Se coloca el objeto
       delay(10);
