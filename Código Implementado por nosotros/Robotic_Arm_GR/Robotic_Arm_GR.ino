@@ -60,7 +60,7 @@ int pin1, pin2;
 Vector3 home = {0.0, 0.0, 0.0};
 
 // Definimos la variable que guarda si la tarea a realizar es la predeterminada o no
-bool default = false;
+bool pick = false;
 
 
 //************************************* Declaración de los prototipos de las funciones *************************************
@@ -207,10 +207,10 @@ void parseBuffer() {  // Coje la cadena, le quita los espacios y la filtra
     //******* Edición del parse buffer para el pick&place *******
     
     else if(tmp.indexOf("y",0)>-1){
-      default = true;
+      pick = true;
     }
     else if(tmp.indexOf("n",0)>-1){
-      default = false;
+      pick = false;
     }
     
     count++;
@@ -506,7 +506,7 @@ void pick_and_place (){ // Tarea
   // Leemos la respuesta
   Read();
 
-  if(default)
+  if(pick)
     defaultPick();
   else
     designedPick();
@@ -531,6 +531,50 @@ void Read(){
 
 // Función que realiza la tarea predeterminada
 void defaultPick(){
+  // Generamos el vector que va a contener el punto donde se debe coger el objeto
+  Vector3 q_origin;
+  q_origin.x = 67.2;
+  q_origin.y = 73.5;
+  q_origin.z = 53.2;
+
+  // Generamos el vector que va a contener el punto intermedio
+  Vector3 q_step;
+  q_step.x = 31.7;
+  q_step.y = 22.8;
+  q_step.z = -17.7;
+
+  // Generamos el vector que va a contener el punto final, donde se debe colocar el objeto
+  Vector3 q_final;
+  q_final.x = -52;
+  q_final.y = 134;
+  q_final.z = -33;
+
+
+  // Seguidamente se posiciona el robot en el home
+  goHome();
+
+  // Se abre la pinza
+  open_grip();
+
+  // Se posiciona el robot en la posición donde tiene que coger el objeto, tiene que llegar en 5s
+  trayectory(q_origin.x,q_origin.y,q_origin.z,5);
+
+  // Se coge el objeto con la pinza
+  delay(10);
+  close_grip();
+
+  // Se posiciona el robot en el punto intermedio
+  trayectory(q_step.x,q_step.y,q_step.z,5);
+
+  // Se posiciona el robot en el punto final
+  trayectory(q_final.x,q_final.y,q_final.z,5);
+
+  // Se coloca el objeto
+  open_grip();
+  delay(10);
+
+  // Se vuelve al home
+  goHome();
   
 }
 
