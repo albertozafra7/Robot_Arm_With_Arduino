@@ -423,7 +423,7 @@ void goHome(){
 //Cinemática directa. Movimiento en q1,q2,q3, en grados
 void move_q1(float q1){
   
-  if ( (q1 <= qlimit_0[1]) && (q1 >= qlimit_0[0])){   //Límite qlim = [-90,90]
+  if ( (q1 <= qlim[1]) && (q1 >= qlim[0])){   //Límite qlim = [-90,90]
     
     if(q1<0.0)
       steppers[0].setSpeed(-currentSpeed);
@@ -440,11 +440,11 @@ void move_q2(float q2){
     if ( (q2 <= qlimit_1[0]) && (q2 >= qlimit_1[1])){   //Límite qlimit = [+,-]
     
     if(q2<0.0)
-      steppers[1].setSpeed(-currentSpeed);
+      steppers[0].setSpeed(-currentSpeed);
     else
-      steppers[1].setSpeed(currentSpeed);
+      steppers[0].setSpeed(currentSpeed);
    
-    move_steps(1,q2*GEAR_2*STEPS/1.8);
+    move_steps(0,q2*GEAR_2*STEPS/1.8);
     //delay(2000); No se si hay que ponerlo
   }   
 }
@@ -454,11 +454,11 @@ void move_q3(float q3){
     if ( (q3 <= qlimit_2[0]) && (q3 >= qlimit_2[1])){   //Límite qlimit = [+,-]
     
     if(q3<0.0)
-      steppers[2].setSpeed(-currentSpeed);
+      steppers[0].setSpeed(-currentSpeed);
     else
-      steppers[2].setSpeed(currentSpeed);
+      steppers[0].setSpeed(currentSpeed);
    
-    move_steps(2,q2*GEAR_2*STEPS/1.8);
+    move_steps(0,q2*GEAR_2*STEPS/1.8);
     //delay(2000);
   }  
 }
