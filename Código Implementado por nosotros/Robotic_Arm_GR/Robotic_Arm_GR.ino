@@ -366,11 +366,11 @@ void move_q2(float q2){
     if ( (q2 <= qlimit_1[0]) && (q2 >= qlimit_1[1])){   //Límite qlimit = [+,-]
     
     if(q2<0.0)
-      steppers[0].setSpeed(-currentSpeed);
+      steppers[1].setSpeed(-currentSpeed);
     else
-      steppers[0].setSpeed(currentSpeed);
+      steppers[1].setSpeed(currentSpeed);
    
-    move_steps(0,q2*GEAR_2*STEPS/1.8);
+    move_steps(1,q2*GEAR_2*STEPS/1.8);
     //delay(2000); No se si hay que ponerlo
   }   
 }
@@ -380,11 +380,11 @@ void move_q3(float q3){
     if ( (q3 <= qlimit_2[0]) && (q3 >= qlimit_2[1])){   //Límite qlimit = [+,-]
     
     if(q3<0.0)
-      steppers[0].setSpeed(-currentSpeed);
+      steppers[2].setSpeed(-currentSpeed);
     else
-      steppers[0].setSpeed(currentSpeed);
+      steppers[2].setSpeed(currentSpeed);
    
-    move_steps(0,q2*GEAR_2*STEPS/1.8);
+    move_steps(2,q2*GEAR_2*STEPS/1.8);
     //delay(2000);
   }  
 }
