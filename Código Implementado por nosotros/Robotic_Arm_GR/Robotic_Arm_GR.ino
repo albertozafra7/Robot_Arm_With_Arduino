@@ -16,7 +16,7 @@ float qlimit_2[2] = {0.0,0.0}; //ToDo
 struct Vector3
 {
   double x;
-  double y; 
+  double y;
   double z;
 };
 
@@ -25,7 +25,7 @@ const double RADS = PI / 180.0; // Conversión de grados sexadecimales a radiane
 const double DEGS = 180.0 / PI; // Conversión de radianes a grados sexadecimales
 const int STEPS = 2;  // No cambiar, son los pasos que realiza cada motor en cada interacción
 const int GEAR_1 = 9; // Relación entre los dos tipos de engranajes 72/8
-const int GEAR_2 = 7; // 
+const int GEAR_2 = 7; //
 
 
 // longitudes de los eslabones
@@ -38,7 +38,7 @@ const double Tz = -45.0;  // Como el extremo se encuentra por encima del eslabon
 const double Tx = 65.0;
 
 String buffer = ""; // Designamos una variable que recogerá todo lo que introduzcamos por medio del puerto serie hasta el \n
-bool endMoving = true;  // 
+bool endMoving = true;  //
 int sensor1, sensor2; // Definimos los Bumpers
 
 Vector3 vectorToAngles(float x,float y,float z);  // Función que le adjudica a un vector 3D devuelto los valores pasados por parámetro
@@ -117,13 +117,13 @@ void trajectory (Vector3 q, float t); // Sobrecarga de la función trajectory
 
 //************************************* Aquí comienza el código principal *************************************
 void setup() {
-  
+
   // Comenzamos el puerto serie
   Serial.begin(115200);
 
   // Configuración motores paso a paso
   setSpeedConfiguration(currentSpeed,maxSpeed,currentAcceleration); // Establezco la configuración de los motores con la velocidad actual, la máxima y la acleración
-  
+
   for(int i=0;i<3;i++){
     steppers[i].setMicroStep(STEPS);  // Establecemos el paso de cada motor a 2
     steppers[i].enableOutputs();  // Habilita las salidas para poder meterle la corriente y de esta manera mover el robot
@@ -134,13 +134,13 @@ void setup() {
   pin2 = limitSwitch.pin2();
   pinMode(pin1,INPUT_PULLUP); // Entrada digital
   pinMode(pin2,INPUT_PULLUP);
-  
-  //Pinza. Configuración servo 
+
+  //Pinza. Configuración servo
   svs[0].attach(A8);  // Servo se encuentra en el puerto A8, que es el 6
   open_grip();  // Abrir la pinza
   delay(1000);  // Esperamos
   close_grip(); // Cerrar la pinza
-  
+
 }
 
 
@@ -184,7 +184,7 @@ void loop() {
 }
 
 void parseBuffer() {  // Coje la cadena, le quita los espacios y la filtra
-  
+
   buffer =" "+buffer+" ";
   buffer.toLowerCase();
 
@@ -200,13 +200,13 @@ void parseBuffer() {  // Coje la cadena, le quita los espacios y la filtra
 
   bool openEnable = false;
   bool closeEnable = false;
-  
+
   //Filtrado del mensaje por el puerto serie
   while (true) {
     startIndex = buffer.indexOf(" ", endIndex);
     endIndex = buffer.indexOf(" ", startIndex + 1);
     tmp = buffer.substring(startIndex + 1, endIndex);
-   
+
     if(tmp.indexOf("q1",0)>-1){ // Lee q1, detecta lo siguiente como parámetros y lo imprime
       values[0] = tmp.substring(2, tmp.length());
       Serial.println(values[0]);
@@ -218,9 +218,9 @@ void parseBuffer() {  // Coje la cadena, le quita los espacios y la filtra
     else if(tmp.indexOf("close",0)>-1){
       closeEnable = true;
     }
-    
+
     //******* Edición del parse buffer para el pick&place *******
-    
+
     else if(tmp.indexOf("y",0)>-1 && !StepAsk) // El usuario desea realizar la tarea predeterminada
       pick = true;
     else if(tmp.indexOf("n",0)>-1 && !StepAsk) // El usuario desea realizar una tarea específica
@@ -233,9 +233,9 @@ void parseBuffer() {  // Coje la cadena, le quita los espacios y la filtra
       MustPass = true;
     else if(tmp.indexOf("n",0)>-1 && StepAsk) // El usuario no desea introducir un paso intermedio en la tarea específica
       MustPass = false;
-    
+
     count++;
-    
+
     if (endIndex == len - 1) break; // Fin del While
   }
 
@@ -301,7 +301,7 @@ void move_steps(int motor_index, int steps){
 //Límites eje 1 - establecerlo en -90,90
 
 //90/1.8 = 50, 180/1.8 = 100
-void reset_stepper0(float qlim[2]){  
+void reset_stepper0(float qlim[2]){
   move_steps(0,qlim[0]*GEAR_1*STEPS/1.8);
 
   steppers[0].setSpeed(-testSpeed);
@@ -309,20 +309,20 @@ void reset_stepper0(float qlim[2]){
 
   move_steps(0,qlim[0]*GEAR_1*STEPS/1.8);
   move_steps(0,qlim[1]*GEAR_1*STEPS/1.8);
-  
+
   steppers[0].setSpeed(testSpeed);
   delay(2000);
 }
 
 //Límites eje 2 - ejemplo
 void reset_stepper1(){
-  
+
   int count_steps1 = 0; // Cuenta el número de pasos girando hacia la derecha
   int count_steps2 = 0; // Cuenta el número de pasos girando hacia la izquierda
   steppers[1].setSpeed(testSpeed);  // Situamos la velocidad de dicho motor positiva, para que gire hacia la derecha
   bool exit1=true;
   bool exit2=true;
-  
+
   while(exit1){
     if(digitalRead(pin1)==LOW){ // Si el bumper no se encuentra pulsado
       steppers[1].step(); // Movemos un paso el motor
@@ -335,10 +335,10 @@ void reset_stepper1(){
       exit1=false;  // Nos salimoss del bucle
     }
   }
-  
+
   steppers[1].setSpeed(-testSpeed); // Ponemos la velocidad negativa, para que gire hacia la izquierda
   delay(2000);
-  
+
   // Se repite el mismo bucle
   while(exit2){
     if(digitalRead(pin1)==LOW){
@@ -361,13 +361,13 @@ void reset_stepper1(){
 
 //Límites eje 3
 void reset_stepper2(){
-      
+
   int count_steps1 = 0;
   int count_steps2 = 0;
   steppers[2].setSpeed(testSpeed);
   bool exit1=true;
   bool exit2=true;
-  
+
   while(exit1){
     if(digitalRead(pin2)==LOW){
       steppers[2].step();
@@ -380,10 +380,10 @@ void reset_stepper2(){
       exit1=false;
     }
   }
-  
+
   steppers[2].setSpeed(-testSpeed);
   delay(2000);
-  
+
   while(exit2){
     if(digitalRead(pin2)==LOW){
       steppers[2].step();
@@ -422,48 +422,48 @@ void goHome(){
 
 //Cinemática directa. Movimiento en q1,q2,q3, en grados
 void move_q1(float q1){
-  
+
   if ( (q1 <= qlimit_0[1]) && (q1 >= qlimit_0[0])){   //Límite qlim = [-90,90]
-    
+
     if(q1<0.0)
       steppers[0].setSpeed(-currentSpeed);
     else
       steppers[0].setSpeed(currentSpeed);
-   
+
     move_steps(0,q1*GEAR_1*STEPS/1.8);
     steppers[0].setCurrentPosition(q1*GEAR_1*STEPS/1.8); //o q1/1.8?
     //delay(2000); No se si hay que ponerlo
-  } 
+  }
 }
 
 void move_q2(float q2){
 
     if ( (q2 <= qlimit_1[0]) && (q2 >= qlimit_1[1])){   //Límite qlimit = [+,-]
-    
+
     if(q2<0.0)
       steppers[1].setSpeed(-currentSpeed);
     else
       steppers[1].setSpeed(currentSpeed);
-   
+
     move_steps(1,q2*GEAR_2*STEPS/1.8);
     steppers[1].setCurrentPosition(q2*GEAR_2*STEPS/1.8);
     //delay(2000); No se si hay que ponerlo
-  }   
+  }
 }
 
 void move_q3(float q3){
-     
+
     if ( (q3 <= qlimit_2[0]) && (q3 >= qlimit_2[1])){   //Límite qlimit = [+,-]
-    
+
     if(q3<0.0)
       steppers[2].setSpeed(-currentSpeed);
     else
       steppers[2].setSpeed(currentSpeed);
-   
-    move_steps(2,q2*GEAR_2*STEPS/1.8);
+
+    move_steps(2,q3*GEAR_2*STEPS/1.8);
     steppers[2].setCurrentPosition(q3*GEAR_2*STEPS/1.8);
     //delay(2000);
-  }  
+  }
 }
 
 void moveToAngles(float q1, float q2, float q3){ // mover los 3 a una posicion
@@ -501,11 +501,11 @@ Vector3 inverseKinematics(float x,float y,float z){
 
   // Calculamos el coseno de q3, mediante el teorema del coseno y el teorema de pitágoras
   // El teorema del coseno es el siguiente: c^2 = a^2 + b^2 - a*b*cos(a^b)
-  float cosq3 = (x^2 + y^2 + z^2 - l2^2 - l3^2)/(2*l2*l3);
+  float cosq3 = (x*x + y*y + z*z - L2*L2 - L3*L3)/(2*L2*L3);
 
   // Calculamos la posición angular del tercer eje, mediante el coseno y el seno de dicha posición
   // tan(q3) = sen(q3)/cos(q3), habiendo calculado anteriormente el coseno de q3 y obteniendo el seno a partir de la identidad trigonométrica sen^2 + cos^2 = 1
-  q.z = atan(sqrt(1-cosq3^2)/cosq3);  // q3 = arcotangente(seno(q3)/coseno(q3))
+  q.z = atan(sqrt(1-cosq3*cosq3)/cosq3);  // q3 = arcotangente(seno(q3)/coseno(q3))
 
   // Finalmente obtenemos la posición angular del segundo eje
   // Por medio de la resta de 2 ángulos, alfa y beta
@@ -513,9 +513,9 @@ Vector3 inverseKinematics(float x,float y,float z){
   // Siendo alfa = atan(z/(sqrt(x^2+y^2)))
   // Beta = atan((l3*sin(atan(sqrt(1-cosq3^2)/cosq3)))/(l2+l3*cosq3))
   // q2 = alfa - beta
-  q.y = atan(z/(sqrt(x^2+y^2)))-atan((l3*(sqrt(1-cosq3^2)/cosq3))/(l2+l3*cosq3)); // Dependiendo de si el valor de la raíz cuadrada contenida en alfa, se puede obtener la posición de codo arriba o codo abajo
+  q.y = atan(z/(sqrt(x*x+y*y)))-atan((L3*(sqrt(1-cosq3*cosq3)/cosq3))/(L2+L3*cosq3)); // Dependiendo de si el valor de la raíz cuadrada contenida en alfa, se puede obtener la posición de codo arriba o codo abajo
 
-  return q; 
+  return q;
 }
 
 //Trayectoria y tarea p&p
@@ -552,7 +552,6 @@ void trajectory (float q1, float q2, float q3, float t){
   // Reestablecemos las velocidades y aceleraciones
   setSpeedConfiguration(currentSpeed,maxSpeed,currentAcceleration);
 }
-
 void pick_and_place (){ // Tarea
 
   // Enviamos un mensaje inicial
@@ -572,7 +571,7 @@ void pick_and_place (){ // Tarea
 // Función que lee los mensajes de pick&place
 void Read(){
   char c; // Variable donde se va a ir evaluando carácter por carácter los mensajes enviados por Matlab
-  
+
   while(Serial.available() <= 0){}
   while(Serial.available() > 0){
     c = Serial.read();  // Leo lo que hay
@@ -629,7 +628,7 @@ void defaultPick(){
 
   // Se vuelve al home
   goHome();
-  
+
 }
 
 // Función que realiza una tarea específica
@@ -650,11 +649,11 @@ void designedPick(){
 
     // Coordenadas donde se va a coger el objeto
     Serial.println("Introduzca las coordenadas cartesianas donde se va a coger el objeto: ");
-    
+
     // Posición X
     Serial.println("X = ");
     origin.x = dataRead();
-    
+
 
     // Posición Y
     Serial.println("Y = ");
@@ -694,13 +693,13 @@ void designedPick(){
       size_t capacity = 1; // Guarda la capacidad del array
       size_t count = 0; // Guarda la posición del array en la que nos encontramos
       Vector3* Passes = new Vector3[1];
-      
+
       do {
 
         // Añadimos una posición en el array
         AddPos(Passes,&capacity,&count);
         // Preguntamos si se desea introducir una nueva posición
-        Serial.println("¿Desea introducir otra posición intermedia?")
+        Serial.println("¿Desea introducir otra posición intermedia?");
 
       } while(MustPass);
 
@@ -711,13 +710,13 @@ void designedPick(){
       trajectory(inverseKinematics(origin.x,origin.y,origin.z),5);
       delay(10);
       close_grip(); // Cerramos la pinza
-  
+
       for(size_t i = 0; i < count; i++) // Pasamos por las posiciones intermedias
         trajectory(inverseKinematics(Passes[i].x,Passes[i].y,Passes[i].z),5);
-  
+
       // Nos situamos en la posición final
       trajectory(inverseKinematics(finalpos.x,finalpos.y,finalpos.z),5);
-  
+
       open_grip();  // Se coloca el objeto
       delay(10);
       goHome(); // Se vuelve al home
@@ -736,10 +735,10 @@ void designedPick(){
       trajectory(inverseKinematics(origin.x,origin.y,origin.z),5);
       delay(10);
       close_grip(); // Cerramos la pinza
- 
+
       // Nos situamos en la posición final
       trajectory(inverseKinematics(finalpos.x,finalpos.y,finalpos.z),5);
-  
+
       open_grip();  // Se coloca el objeto
       delay(10);
       goHome(); // Se vuelve al home
@@ -747,16 +746,16 @@ void designedPick(){
     }
 
   } else {  // Si se realiza con posiciones angulares
-    
+
     // Se pregunta por dichas posiciones angulares
 
     // Coordenadas donde se va a coger el objeto
     Serial.println("Introduzca las posiciones angulares que va a tener el robot para poder coger el objeto: ");
-    
+
     // Posición del eje 1
     Serial.println("q1 = ");
     origin.x = dataRead();
-    
+
 
     // Posición del eje 2
     Serial.println("q2 = ");
@@ -796,13 +795,13 @@ void designedPick(){
       size_t capacity = 1; // Guarda la capacidad del array
       size_t count = 0; // Guarda la posición del array en la que nos encontramos
       Vector3* Passes = new Vector3[1];
-      
+
       do {
 
         // Añadimos una posición en el array
         AddPosAng(Passes,&capacity,&count);
         // Preguntamos si se desea introducir una nueva posición
-        Serial.println("¿Desea introducir otra posición intermedia?")
+        Serial.println("¿Desea introducir otra posición intermedia?");
 
       } while(MustPass);
 
@@ -813,13 +812,13 @@ void designedPick(){
       trajectory(origin.x,origin.y,origin.z,5);
       delay(10);
       close_grip(); // Cerramos la pinza
-  
+
       for(size_t i = 0; i < count; i++) // Pasamos por las posiciones intermedias
         trajectory(Passes[i].x,Passes[i].y,Passes[i].z,5);
-  
+
       // Nos situamos en la posición final
       trajectory(finalpos.x,finalpos.y,finalpos.z,5);
-  
+
       open_grip();  // Se coloca el objeto
       delay(10);
       goHome(); // Se vuelve al home
@@ -838,24 +837,24 @@ void designedPick(){
       trajectory(origin.x,origin.y,origin.z,5);
       delay(10);
       close_grip(); // Cerramos la pinza
- 
+
       // Nos situamos en la posición final
       trajectory(finalpos.x,finalpos.y,finalpos.z,5);
-  
+
       open_grip();  // Se coloca el objeto
       delay(10);
       goHome(); // Se vuelve al home
 
     }
   }
-  
+
 }
 
 // Función que lee los valores de pick&place
 float dataRead(){
   float data = 0; // Variable que guarda el valor introducido
   char c; // Variable donde se va a ir evaluando carácter por carácter los mensajes enviados por Matlab
-  
+
   while(Serial.available() <= 0){}
   while(Serial.available() > 0){
     c = Serial.read();  // Leo lo que hay
@@ -879,19 +878,19 @@ void AddPos(Vector3* Passes, size_t *capacity, size_t *count){
     // Redimensionamos el array
     size_t newSize = (*capacity) * 2;
     resize(newSize,Passes,capacity,*count);
-  } 
- 
+  }
+
  // Preguntamos por sus coordenadas
  Serial.println("Introduzca sus coordenadas cartesianas: ");
-  
+
  // Coordenada X
  Serial.println("X = ");
  Passes[*count-1].x = dataRead();
-  
+
  // Coordenada Y
  Serial.println("Y = ");
  Passes[*count-1].y = dataRead();
-  
+
  // Coordenada Z
  Serial.println("Z = ");
  Passes[*count-1].z = dataRead();
@@ -907,19 +906,19 @@ void AddPosAng(Vector3* Passes, size_t *capacity, size_t *count){
     // Redimensionamos el array
     size_t newSize = (*capacity) * 2;
     resize(newSize,Passes,capacity,*count);
-  } 
- 
+  }
+
  // Preguntamos por sus coordenadas
  Serial.println("Introduzca sus posiciones angulares: ");
-  
+
  // Posición angular del eje 1
  Serial.println("q1 = ");
  Passes[*count-1].x = dataRead();
-  
+
  // Posición angular del eje 2
  Serial.println("q2 = ");
  Passes[*count-1].y = dataRead();
-  
+
  // Posición angular del eje 3
  Serial.println("Z = ");
  Passes[*count-1].z = dataRead();
@@ -948,7 +947,7 @@ void Remove(Vector3* Passes,size_t *count, size_t* capacity){
   Trim(*count,Passes,capacity);
 
 }
- 
+
 // Reducción de la capacidad del array de posiciones
 void Trim(size_t count, Vector3* Passes, size_t* capacity){
   resize(count,Passes,capacity,count);
