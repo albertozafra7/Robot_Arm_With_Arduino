@@ -743,7 +743,7 @@ void defaultPick(){
         break;
     }
 
-    if(!steppers[0]._moving && !steppers[1]._moving && !steppers[2]._moving)
+    //if(!steppers[0]._moving && !steppers[1]._moving && !steppers[2]._moving)  // ¿Se actualiza _moving en algún momento?
       Case++;
   }
   
@@ -756,6 +756,12 @@ void designedPick(){
   // Se generan los vectores que van a contener las posiciones de la tarea
   Vector3 origin; // La posición donde se debe coger el objeto
   Vector3 finalpos; // La posición donde se debe de dejar el objeto
+
+  // Generamos la variable que indicará si se ha realizado la tarea
+  bool done = false;
+  
+  // Generamos un contador que indica el caso en el que se encuentra el robot
+  bool Case = 0;
 
   // Se pregunta cómo se desean introducir las coordenadas del punto
   Serial.println("¿Desea trabajar con posiciones angulares o con coordenadas cartesianas? (ang/coord): ");
@@ -819,43 +825,98 @@ void designedPick(){
       } while(Answer());
 
       // Reproducimos la tarea
-      goHome(); // Nos situamos en el home
-      open_grip();  // Abrimos la pinza
-      // Vamos a la posición donde se debe coger el objeto
-      trajectory(inverseKinematics(origin.x,origin.y,origin.z),5);
-      delay(10);
-      close_grip(); // Cerramos la pinza
+      while(!done){
+        switch(Case){
+          case 0:
+            goHome(); // Nos situamos en el home
+            break;
 
-      for(size_t i = 0; i < count; i++) // Pasamos por las posiciones intermedias
-        trajectory(inverseKinematics(Passes[i].x,Passes[i].y,Passes[i].z),5);
+          case 1:
+            open_grip();  // Abrimos la pinza
+            break;
 
-      // Nos situamos en la posición final
-      trajectory(inverseKinematics(finalpos.x,finalpos.y,finalpos.z),5);
+          case 2:
+            // Vamos a la posición donde se debe coger el objeto
+            trajectory(inverseKinematics(origin.x,origin.y,origin.z),5);
+            break;
 
-      open_grip();  // Se coloca el objeto
-      delay(10);
-      goHome(); // Se vuelve al home
+          case 3:
+            close_grip(); // Cerramos la pinza
+            break;
 
+          case 4:
+            for(size_t i = 0; i < count; i++) // Pasamos por las posiciones intermedias
+              trajectory(inverseKinematics(Passes[i].x,Passes[i].y,Passes[i].z),5);
+            break;
+
+          case 5:
+            // Nos situamos en la posición final
+            trajectory(inverseKinematics(finalpos.x,finalpos.y,finalpos.z),5);
+            break;
+
+          case 6:
+            open_grip();  // Se coloca el objeto
+            break;
+
+          case 7:
+            goHome(); // Se vuelve al home
+            done = true;
+            break;
+
+          default:
+            Serial.println("Error");
+            break;
+        }
+
+        Case++;
+      }
+
+      // Liberamos todo lo contenido en el array de puntos intermedios
       size_t j = count; // Guardamos una copia del count
       for(size_t i = 0; i < j; i++) // Borramos el array entero
         Remove(Passes,&count,&capacity);
 
     } else {  // Si no se poseen posiciones intermedias
       // Reproducimos la tarea
-      goHome(); // Nos situamos en el home
-      open_grip();  // Abrimos la pinza
-      // Vamos a la posición donde se debe coger el objeto
-      trajectory(inverseKinematics(origin.x,origin.y,origin.z),5);
-      delay(10);
-      close_grip(); // Cerramos la pinza
+      while(!done){
+        switch(Case){
+          case 0:
+            goHome(); // Nos situamos en el home
+            break;
 
-      // Nos situamos en la posición final
-      trajectory(inverseKinematics(finalpos.x,finalpos.y,finalpos.z),5);
+          case 1:
+            open_grip();  // Abrimos la pinza
+            break;
 
-      open_grip();  // Se coloca el objeto
-      delay(10);
-      goHome(); // Se vuelve al home
+          case 2:
+            // Vamos a la posición donde se debe coger el objeto
+            trajectory(inverseKinematics(origin.x,origin.y,origin.z),5);
+            break;
 
+          case 3:
+            close_grip(); // Cerramos la pinza
+            break;
+
+          case 4:
+            // Nos situamos en la posición final
+            trajectory(inverseKinematics(finalpos.x,finalpos.y,finalpos.z),5);
+            break;
+
+          case 5:
+            open_grip();  // Se coloca el objeto
+            break;
+
+          case 6:
+            goHome(); // Se vuelve al home
+            done = true;
+            break;
+
+          default:
+            Serial.println("Error");
+            break;
+        }
+        Case++;
+      }
     }
 
   } else {  // Si se realiza con posiciones angulares
@@ -914,22 +975,50 @@ void designedPick(){
       } while(Answer());
 
       // Reproducimos la tarea
-      goHome(); // Nos situamos en el home
-      open_grip();  // Abrimos la pinza
-      // Vamos a la posición donde se debe coger el objeto
-      trajectory(origin.x,origin.y,origin.z,5);
-      delay(10);
-      close_grip(); // Cerramos la pinza
+      while(!done){
+        switch(Case){
+          case 0:
+            goHome(); // Nos situamos en el home
+            break;
 
-      for(size_t i = 0; i < count; i++) // Pasamos por las posiciones intermedias
-        trajectory(Passes[i].x,Passes[i].y,Passes[i].z,5);
+          case 1:
+            open_grip();  // Abrimos la pinza
+            break;
 
-      // Nos situamos en la posición final
-      trajectory(finalpos.x,finalpos.y,finalpos.z,5);
+          case 2:
+            // Vamos a la posición donde se debe coger el objeto
+            trajectory(origin.x,origin.y,origin.z,5);
+            break;
 
-      open_grip();  // Se coloca el objeto
-      delay(10);
-      goHome(); // Se vuelve al home
+          case 3:
+            close_grip(); // Cerramos la pinza
+            break;
+
+          case 4:
+            for(size_t i = 0; i < count; i++) // Pasamos por las posiciones intermedias
+              trajectory(Passes[i].x,Passes[i].y,Passes[i].z,5);
+            break;
+
+          case 5:
+            // Nos situamos en la posición final
+            trajectory(finalpos.x,finalpos.y,finalpos.z,5);
+            break;
+
+          case 6:
+            open_grip();  // Se coloca el objeto
+            break;
+
+          case 7:
+            goHome(); // Se vuelve al home
+            done = true;
+            break;
+
+          default:
+            Serial.println("Error");
+            break; 
+        }
+        Case++;
+      }
 
       size_t j = count; // Guardamos una copia del count
       for(size_t i = 0; i < j; i++) // Borramos el array entero
@@ -937,20 +1026,45 @@ void designedPick(){
 
     } else {  // Si no se poseen posiciones intermedias
       // Reproducimos la tarea
-      goHome(); // Nos situamos en el home
-      open_grip();  // Abrimos la pinza
-      // Vamos a la posición donde se debe coger el objeto
-      trajectory(origin.x,origin.y,origin.z,5);
-      delay(10);
-      close_grip(); // Cerramos la pinza
+      while(!done){
+        switch(Case){
+          case 0:
+            goHome(); // Nos situamos en el home
+            break;
 
-      // Nos situamos en la posición final
-      trajectory(finalpos.x,finalpos.y,finalpos.z,5);
+          case 1:
+            open_grip();  // Abrimos la pinza
+            break;
 
-      open_grip();  // Se coloca el objeto
-      delay(10);
-      goHome(); // Se vuelve al home
+          case 2:
+            // Vamos a la posición donde se debe coger el objeto
+            trajectory(origin.x,origin.y,origin.z,5);
+            break;
 
+          case 3:
+            close_grip(); // Cerramos la pinza
+            break;
+
+          case 4:
+            // Nos situamos en la posición final
+            trajectory(finalpos.x,finalpos.y,finalpos.z,5);
+            break;
+
+          case 5:
+            open_grip();  // Se coloca el objeto
+            break;
+
+          case 6:
+            goHome(); // Se vuelve al home
+            done = true;
+            break;
+
+          default:
+            Serial.println("Error");
+            break;
+        }
+        Case++;
+      }
     }
   }
 
