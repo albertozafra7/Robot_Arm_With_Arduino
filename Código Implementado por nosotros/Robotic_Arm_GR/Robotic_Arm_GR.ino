@@ -59,17 +59,8 @@ int pin1, pin2;
 // Definimos la variable home
 Vector3 home = {0.0, 0.0, 0.0};
 
-// Definimos la variable que guarda si la tarea a realizar es la predeterminada o no
-bool pick = false;
-
 // Definimos la variable que guarda el modo de introducción de los datos
 bool cart = false;
-
-// Definimos la variable que guarda si el robot se encuentra preguntando por la introducción de una posición intermedia
-bool StepAsk = false;
-
-// Definimos la variable que guarda si el robot debe pasar por una posición intermedia
-bool MustPass = false;
 
 
 //************************************* Declaración de los prototipos de las funciones *************************************
@@ -112,6 +103,7 @@ void resize(size_t, Vector3*, size_t*, size_t); // Redimensiona el array de posi
 void Remove(Vector3*,size_t *); // Eliminar el último elemento que contiene el array
 void Trim(size_t, Vector3*, size_t*); // Reducción del array que contiene las posiciones intermedias de la tarea específica
 void trajectory (Vector3 q, float t); // Sobrecarga de la función trajectory
+bool Answer();  // Recibe la respuesta de un pregunta de si o no
 
 
 
@@ -211,6 +203,10 @@ void parseBuffer() {  // Coje la cadena, le quita los espacios y la filtra
       values[0] = tmp.substring(2, tmp.length());
       Serial.println(values[0]);
       move_q1(stringToFloat(values[0]));
+    } else if(tmp.indexOf("q1",0)>-1){ // Lee q1, detecta lo siguiente como parámetros y lo imprime
+      values[0] = tmp.substring(2, tmp.length());
+      Serial.println(values[0]);
+      move_q1(stringToFloat(values[0]));
     }
     else if(tmp.indexOf("open",0)>-1){  // Abre o cierra
        openEnable = true; // Se puede sustituir por la llamada a la función
@@ -220,19 +216,10 @@ void parseBuffer() {  // Coje la cadena, le quita los espacios y la filtra
     }
 
     //******* Edición del parse buffer para el pick&place *******
-
-    else if(tmp.indexOf("y",0)>-1 && !StepAsk) // El usuario desea realizar la tarea predeterminada
-      pick = true;
-    else if(tmp.indexOf("n",0)>-1 && !StepAsk) // El usuario desea realizar una tarea específica
-      pick = false;
     else if((tmp.indexOf("coord",0)>-1) || (tmp.indexOf("cart",0)>-1) || (tmp.indexOf("cord",0)>-1))  // El usuario debe introducir las coordenadas cartesianas en la tarea específica
       cart = true;
     else if((tmp.indexOf("ang",0)>-1) || (tmp.indexOf("pos",0)>-1))  // El usuario debe introducir las posiciones articulares en la tarea específica
       cart = false;
-    else if(tmp.indexOf("y",0)>-1 && StepAsk) // El usuario desea introducir un paso intermedio en la tarea específica
-      MustPass = true;
-    else if(tmp.indexOf("n",0)>-1 && StepAsk) // El usuario no desea introducir un paso intermedio en la tarea específica
-      MustPass = false;
 
     count++;
 
@@ -559,10 +546,8 @@ void pick_and_place (){ // Tarea
 
   // Enviamos un mensaje inicial
   Serial.println("¿Desea realizar la operacion por defecto? (Y/N): ");
-  // Leemos la respuesta
-  Read();
-
-  if(pick)
+  
+  if(Answer())
     defaultPick();
   else
     designedPick();
@@ -573,7 +558,7 @@ void pick_and_place (){ // Tarea
 
 // Función que lee los mensajes de pick&place
 void Read(){
-  char c; // Variable donde se va a ir evaluando carácter por carácter los mensajes enviados por Matlab
+  char c; // Variable donde se va a ir evaluando carácter por carácter los mensajes enviados
 
   while(Serial.available() <= 0){}
   while(Serial.available() > 0){
@@ -686,12 +671,7 @@ void designedPick(){
     // Preguntamos si desea pasar por puntos intermedios
     Serial.println("¿Desea introducir algún punto intermedio? (y/n):");
 
-    // Se establece el modo de introducción de una posición intermedia
-    StepAsk = true;
-    // Se lee la respuesta
-    Read();
-
-    if(MustPass){
+    if(Answer()){
       // Creamos un array dinámico de posiciones por si el usuario desea introducir más de una posición intermedia
       size_t capacity = 1; // Guarda la capacidad del array
       size_t count = 0; // Guarda la posición del array en la que nos encontramos
@@ -704,7 +684,7 @@ void designedPick(){
         // Preguntamos si se desea introducir una nueva posición
         Serial.println("¿Desea introducir otra posición intermedia?");
 
-      } while(MustPass);
+      } while(Answer());
 
       // Reproducimos la tarea
       goHome(); // Nos situamos en el home
@@ -723,8 +703,6 @@ void designedPick(){
       open_grip();  // Se coloca el objeto
       delay(10);
       goHome(); // Se vuelve al home
-
-      StepAsk = false;
 
       size_t j = count; // Guardamos una copia del count
       for(size_t i = 0; i < j; i++) // Borramos el array entero
@@ -788,12 +766,7 @@ void designedPick(){
     // Preguntamos si desea pasar por puntos intermedios
     Serial.println("¿Desea introducir algún punto intermedio? (y/n):");
 
-    // Se establece el modo de introducción de una posición intermedia
-    StepAsk = true;
-    // Se lee la respuesta
-    Read();
-
-    if(MustPass){
+    if(Answer()){
       // Creamos un array dinámico de posiciones por si el usuario desea introducir más de una posición intermedia
       size_t capacity = 1; // Guarda la capacidad del array
       size_t count = 0; // Guarda la posición del array en la que nos encontramos
@@ -806,7 +779,7 @@ void designedPick(){
         // Preguntamos si se desea introducir una nueva posición
         Serial.println("¿Desea introducir otra posición intermedia?");
 
-      } while(MustPass);
+      } while(Answer());
 
       // Reproducimos la tarea
       goHome(); // Nos situamos en el home
@@ -825,8 +798,6 @@ void designedPick(){
       open_grip();  // Se coloca el objeto
       delay(10);
       goHome(); // Se vuelve al home
-
-      StepAsk = false;  // Dejamos de preguntar por las posiciones intermedias
 
       size_t j = count; // Guardamos una copia del count
       for(size_t i = 0; i < j; i++) // Borramos el array entero
@@ -856,7 +827,7 @@ void designedPick(){
 // Función que lee los valores de pick&place
 float dataRead(){
   float data = 0; // Variable que guarda el valor introducido
-  char c; // Variable donde se va a ir evaluando carácter por carácter los mensajes enviados por Matlab
+  char c; // Variable donde se va a ir evaluando carácter por carácter los mensajes enviados
 
   while(Serial.available() <= 0){}
   while(Serial.available() > 0){
@@ -989,4 +960,27 @@ void trajectory (Vector3 q, float t){
 
   // Reestablecemos las velocidades y aceleraciones
   setSpeedConfiguration(currentSpeed,maxSpeed,currentAcceleration);
+}
+
+
+
+// Función que lee los mensajes de sí o no
+bool Answer(){
+  char c; // Variable donde se va a ir evaluando carácter por carácter los mensajes enviados
+  bool answer = false;
+
+  while(Serial.available() <= 0){}
+  while(Serial.available() > 0){
+    c = Serial.read();  // Leo lo que hay
+    if (c == '\n'){  // Si lo que leo es un intro
+     if(tmp.indexOf("y",0)>-1) // La respuesta es un sí
+      answer = true;
+    else  // La respuesta es un no, o incorrecta
+      answer = false;
+    }else  // Si no
+      buffer += c;  // Introduzco en la variable buffer los datos
+  }
+
+  buffer = "";
+  return answer;
 }
