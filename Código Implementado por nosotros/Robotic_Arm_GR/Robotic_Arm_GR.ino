@@ -432,7 +432,7 @@ void move_q1(float q1){
     else
       steppers[0].setSpeed(currentSpeed);
 
-    steppers[0].moveTosteps(Steps);
+    steppers[0].moveTo(Steps);
     lastPositions[0] = Steps;
   }
 }
@@ -448,7 +448,7 @@ void move_q2(float q2){
     else
       steppers[1].setSpeed(currentSpeed);
 
-      steppers[1].moveTosteps(Steps);
+      steppers[1].moveTo(Steps);
       lastPositions[1] = Steps;
     }
 }
@@ -464,7 +464,7 @@ void move_q3(float q3){
     else
       steppers[2].setSpeed(currentSpeed);
 
-      steppers[2].moveTosteps(Steps);
+      steppers[2].moveTo(Steps);
       lastPositions[2] = Steps;
   }
 }
