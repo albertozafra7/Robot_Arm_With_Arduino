@@ -18,7 +18,7 @@ L3 = Link([0,0,200,0]);
 % Unión de articulaciones
 L = [L1 L2 L3];
 
-%% Tabla generada por Tamai
+%% Tabla generada por David
 
 % Articulación 1
 L1 = Link([0,150,0,deg2rad(-90)]);
@@ -34,7 +34,7 @@ L3 = Link([deg2rad(90),0,200,0]);
 % Unión de articulaciones
 L = [L1 L2 L3];
 
-%% Tabla generada por Darío
+%% Tabla generada por Carles
 
 % Articulación 1
 L1 = Link([0,150,0,deg2rad(-90)]);
@@ -88,7 +88,7 @@ r = l2*sin(q2)+(268.7936)*sin(q3+q2+0.1682);
 effector =[r*cos(q1) r*sin(q1) l1+l2*cos(q2)+(268.7936)*cos(q3+q2+0.1682)];
 cosq3 = (effector(1)^2 + effector(2)^2 + effector(3)^2 - l2^2 - l3^2)/(2*l2*l3);
 
-qe_inv = [atan(effector(2)/effector(1)) atan(effector(3)/(sqrt(effector(1)^2+effector(2)^2)))-atan((l3*sin(atan(sqrt(1-cosq3^2)/cosq3)))/(l2+l3*cosq3)) atan(sqrt(1-cosq3^2)/cosq3)];
+qe_inv = [atan(effector(2)/effector(1)) atan(effector(3)/(sqrt(effector(1)^2+effector(2)^2)))-atan((l3*(sqrt(1-cosq3^2)/cosq3))/(l2+l3*cosq3)) atan(sqrt(1-cosq3^2)/cosq3)];
  
  T_inv = robot.fkine(qe_inv)
  
