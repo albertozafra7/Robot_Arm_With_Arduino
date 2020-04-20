@@ -199,22 +199,58 @@ void parseBuffer() {  // Coje la cadena, le quita los espacios y la filtra
     endIndex = buffer.indexOf(" ", startIndex + 1);
     tmp = buffer.substring(startIndex + 1, endIndex);
 
+    // ------------ Comandos de movimiento de ejes por separado ------------
+    
     if(tmp.indexOf("q1",0)>-1){ // Lee q1, detecta lo siguiente como parámetros y lo imprime
-      values[0] = tmp.substring(2, tmp.length());
+      values[0] = tmp.substring(2, tmp.length()); // Se guardan los parámetros especificados
       Serial.println(values[0]);
-      move_q1(stringToFloat(values[0]));
-    } else if(tmp.indexOf("q1",0)>-1){ // Lee q1, detecta lo siguiente como parámetros y lo imprime
-      values[0] = tmp.substring(2, tmp.length());
-      Serial.println(values[0]);
-      move_q1(stringToFloat(values[0]));
-    }
-    else if(tmp.indexOf("open",0)>-1){  // Abre o cierra
-       openEnable = true; // Se puede sustituir por la llamada a la función
-    }
-    else if(tmp.indexOf("close",0)>-1){
-      closeEnable = true;
-    }
+      move_q1(stringToFloat(values[0]));  // Mueve el eje 1 a la posición angular especificada
+      
+    } else if(tmp.indexOf("q2",0)>-1){ // Lee q2, detecta lo siguiente como parámetros y lo imprime
+      values[1] = tmp.substring(2, tmp.length()); // Se guardan los parámetros especificados
+      Serial.println(values[1]);
+      move_q2(stringToFloat(values[1]));  // Mueve el eje 2 a la posición angular especificada
+      
+    } else if(tmp.indexOf("q3",0)>-1){ // Lee q3, detecta lo siguiente como parámetros y lo imprime
+      values[2] = tmp.substring(2, tmp.length()); // Se guardan los parámetros especificados
+      Serial.println(values[2]);
+      move_q3(stringToFloat(values[2]));  // Mueve el eje 3 a la posición angular especificada
 
+
+    
+    // ------------ Comandos de movimiento del establecimiento de los límites angulares ------------
+    
+    } else if(tmp.indexOf("reset_stepper0",0)>-1){ // Ejecuta la función de reset_stepper del eje 1
+      reset_stepper0(qlimit_0); // Establece los límites angulares del primer eje
+      
+    } else if(tmp.indexOf("reset_stepper1",0)>-1){ // Ejecuta la función de reset_stepper del eje 2
+      reset_stepper1(); // Establece los límites angulares del segundo eje
+      
+    } else if(tmp.indexOf("reset_stepper2",0)>-1){ // Ejecuta la función de reset_stepper del eje 3
+      reset_stepper2(); // Establece los límites angulares del tercer eje
+
+
+    
+    // ------------ Comandos de manejo de la pinza ------------
+    
+    
+    } else if(tmp.indexOf("open",0)>-1){  // Abre o cierra
+       openEnable = true; // Se puede sustituir por la llamada a la función
+    
+    } else if(tmp.indexOf("close",0)>-1){
+      closeEnable = true;
+
+    
+    // ------------ Comando de establecimiento del home ------------
+
+    } else if(tmp.indexOf("setHome",0)>-1){
+      if(tmp.indexOf("(",0)>-1){
+        if(tmp.indexOf(",",0)>-1){
+          
+        }
+      }
+    }
+    
     //******* Edición del parse buffer para el pick&place *******
     else if((tmp.indexOf("coord",0)>-1) || (tmp.indexOf("cart",0)>-1) || (tmp.indexOf("cord",0)>-1))  // El usuario debe introducir las coordenadas cartesianas en la tarea específica
       cart = true;
