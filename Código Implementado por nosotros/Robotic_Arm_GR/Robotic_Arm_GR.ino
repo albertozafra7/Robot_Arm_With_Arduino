@@ -257,7 +257,13 @@ void parseBuffer() {  // Coje la cadena, le quita los espacios y la filtra
         }
       } else {  // Si se ha llamado al setHome sin pasarle parámetros quiere decir que se quiere establecer la posición actual como home
         setHome(steppers[0].currentPosition(),steppers[1].currentPosition(),steppers[2].currentPosition());
-        String Message = "Home stablished at: (" + steppers[0].currentPosition() + ", " +steppers[1].currentPosition() + ", " + steppers[2].currentPosition() + ")";  // Generamos el mensaje de confirmación
+        
+        // Generamos el mensaje de confirmación
+        String Message = "Home stablished at: (" + steppers[0].currentPosition();
+        Message+= ", " +steppers[1].currentPosition();
+        Message+= ", " + steppers[2].currentPosition();
+        Message += ")";  
+        
         Serial.println(Message);  // Imprimimos el mensaje
       }
         
@@ -277,8 +283,12 @@ void parseBuffer() {  // Coje la cadena, le quita los espacios y la filtra
       // Se realiza el mismo proceso que con moveToAngles
       
       parseParameters(tmp,values);  // Se filtran los parámetros
-
-      moveToPoint(stringToFloat(values[0]),stringToFloat(values[1]),stringToFloat(values[2]));  // Se ejecuta la función
+      
+      Vector3 v;
+      v.x = stringToFloat(values[0]);
+      v.y = stringToFloat(values[1]);
+      v.z = stringToFloat(values[2]);
+      moveToPoint(v);  // Se ejecuta la función
      
 
     // ------------ Comandos para realizar cálculos cinemáticos ------------
@@ -290,7 +300,16 @@ void parseBuffer() {  // Coje la cadena, le quita los espacios y la filtra
 
       Vector3 forward = forwardKinematics(stringToFloat(values[0]),stringToFloat(values[1]),stringToFloat(values[2]));  // Se ejecuta la función
 
-      String Message = "The result of the forward kinematic is: " + forward.x + ", " + forward.y + ", " + forward.z + ")";  // Se genera el mensaje que contiene los resultados
+      String Message = "The result of the forward kinematic is: ";
+      
+      // Se genera el mensaje que contiene los resultados
+      Message+= forward.x;
+      Message += ", " ;
+      Message+= forward.y;
+      Message += ", " ;
+      Message+= forward.z;
+      Message+= ")";  
+      
       Serial.println(Message);  // Se imprime
 
     } else if(tmp.indexOf("inverseKinematics",0)>-1) {  // Se calcula la cinemática directa del robot a partir de unas posiciones angulares específicas
@@ -299,8 +318,15 @@ void parseBuffer() {  // Coje la cadena, le quita los espacios y la filtra
       parseParameters(tmp,values);  // Se filtran los parámetros
 
       Vector3 inverse = inverseKinematics(stringToFloat(values[0]),stringToFloat(values[1]),stringToFloat(values[2]));  // Se ejecuta la función
-
-      String Message = "The result of the inverse kinematic is: " + inverse.x + ", " + inverse.y + ", " + inverse.z + ")";  // Se genera el mensaje que contiene los resultados
+      
+      // Se genera el mensaje que contiene los resultados
+      String Message = "The result of the inverse kinematic is: ";
+      Message += inverse.x;
+      Message += ", ";
+      Message += inverse.y;
+      Message += ", ";
+      Message+= inverse.z ;
+      Message += ")";  
       Serial.println(Message);  // Se imprime
 
 
@@ -1224,7 +1250,7 @@ bool Answer(){
   while(Serial.available() > 0){
     c = Serial.read();  // Leo lo que hay
     if (c == '\n'){  // Si lo que leo es un intro
-     if(tmp.indexOf("y",0)>-1) // La respuesta es un sí
+     if(buffer.indexOf("y",0)>-1) // La respuesta es un sí
       answer = true;
     else  // La respuesta es un no, o incorrecta
       answer = false;
