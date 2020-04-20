@@ -688,32 +688,66 @@ void defaultPick(){
   q_final.y = 134;
   q_final.z = -33;
 
+  // Generamos la variable que indicará si se ha realizado la tarea
+  bool done = false;
+  
+  // Generamos un contador que indica el caso en el que se encuentra el robot
+  bool Case = 0;
 
-  // Seguidamente se posiciona el robot en el home
-  goHome();
+  // Realizamos la tarea
+  while(!done){
+    switch(Case){
+      case 0:
+        // Se posiciona el robot en el home
+        goHome();
+        break;
+        
+      case 1:
+        // Se abre la pinza
+        open_grip();
+        break;
 
-  // Se abre la pinza
-  open_grip();
+      case 2:
+        // Se posiciona el robot en la posición donde tiene que coger el objeto, tiene que llegar en 5s
+        trajectory(q_origin.x,q_origin.y,q_origin.z,5);
+        break;
 
-  // Se posiciona el robot en la posición donde tiene que coger el objeto, tiene que llegar en 5s
-  trajectory(q_origin.x,q_origin.y,q_origin.z,5);
+      case 3:
+        // Se coge el objeto con la pinza
+        close_grip();
+        break;
 
-  // Se coge el objeto con la pinza
-  delay(10);
-  close_grip();
+      case 4:
+        // Se posiciona el robot en el punto intermedio
+        trajectory(q_step.x,q_step.y,q_step.z,5);
+        break;
 
-  // Se posiciona el robot en el punto intermedio
-  trajectory(q_step.x,q_step.y,q_step.z,5);
+      case 5:
+        // Se posiciona el robot en el punto final
+        trajectory(q_final.x,q_final.y,q_final.z,5);
+        break;
 
-  // Se posiciona el robot en el punto final
-  trajectory(q_final.x,q_final.y,q_final.z,5);
+      case 6:
+        // Se coloca el objeto
+        open_grip();
+        break;
 
-  // Se coloca el objeto
-  open_grip();
-  delay(10);
+      case 7:
+        // Se vuelve al home
+        goHome();
+        done = true;
+        break;
 
-  // Se vuelve al home
-  goHome();
+      default:  // Si se llega aquí quiere decir que ha habido un error
+        Serial.println("Error");
+        break;
+    }
+
+    if(!steppers[0]._moving && !steppers[1]._moving && !steppers[2]._moving)
+      Case++;
+  }
+  
+  
 
 }
 
