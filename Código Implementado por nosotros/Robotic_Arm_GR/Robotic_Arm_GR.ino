@@ -639,6 +639,11 @@ void trajectory (float q1, float q2, float q3, float t){
 
   // Reestablecemos las velocidades y aceleraciones
   setSpeedConfiguration(currentSpeed,maxSpeed,currentAcceleration);
+
+  // Guardamos las posiciones actuales
+  steppers[0].setCurrentPosition(q1);
+  steppers[1].setCurrentPosition(q2);
+  steppers[2].setCurrentPosition(q3);
 }
 void pick_and_place (){ // Tarea
 
