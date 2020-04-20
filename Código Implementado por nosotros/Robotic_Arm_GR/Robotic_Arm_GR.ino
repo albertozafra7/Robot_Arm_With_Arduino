@@ -90,7 +90,7 @@ Vector3 forwardKinematics (float q1, float q2, float q3); // Cálculo de la cine
 void moveToPoint(Vector3 point);  // Movimiento de los tres ejes del robot para que el actuador final se encuentre en unas coordenadas específicas
 Vector3 inverseKinematics(float x,float y,float z); // Cálculo de la cinemática inversa del robot
 void trajectory (float q1, float q2, float q3, float t);  // Función que mueve el robot a una posición angular síncronamente
-void pick_and_place (); // Función que realiza una tarea específica
+void pick_and_place(); // Función que realiza una tarea específica
 
 //----------- Funciones desarrolladas como apoyo -----------
 void Read();  // Lectura de los mensajes pasados por el monitor serie
@@ -104,6 +104,7 @@ void Remove(Vector3*,size_t *); // Eliminar el último elemento que contiene el 
 void Trim(size_t, Vector3*, size_t*); // Reducción del array que contiene las posiciones intermedias de la tarea específica
 void trajectory (Vector3 q, float t); // Sobrecarga de la función trajectory
 bool Answer();  // Recibe la respuesta de un pregunta de si o no
+void parseParameters(String, String*); // Filtra los parámetros de las llamadas a las funciones del parseBuffer()
 
 
 
@@ -244,15 +245,72 @@ void parseBuffer() {  // Coje la cadena, le quita los espacios y la filtra
     // ------------ Comando de establecimiento del home ------------
 
     } else if(tmp.indexOf("setHome",0)>-1){
-      if(tmp.indexOf("(",0)>-1){
+      if(tmp.indexOf("(",0)>-1){  // Si se ha llamado al setHome pasándole parámetros
         if(tmp.indexOf(",",0)>-1){
           
+          parseParameters(tmp,values);  // Se filtran los parámetros
+          
+          setHome(stringToFloat(values[0]),stringToFloat(values[1]),stringToFloat(values[2]));  // Se establece el Home
+
+          String Message = "Home stablished at: (" + values[0] + ", " + values[1] + ", " + values[2] + ")"; // Generamos el mensage de confirmación a devolver
+          Serial.println(Message);  // Lo imprimimos
         }
+      } else {  // Si se ha llamado al setHome sin pasarle parámetros quiere decir que se quiere establecer la posición actual como home
+        setHome(steppers[0].currentPosition(),steppers[1].currentPosition(),steppers[2].currentPosition());
+        String Message = "Home stablished at: (" + steppers[0].currentPosition() + ", " +steppers[1].currentPosition() + ", " + steppers[2].currentPosition() + ")";  // Generamos el mensaje de confirmación
+        Serial.println(Message);  // Imprimimos el mensaje
       }
-    }
+        
+
+
+    // ------------ Comandos de movimiento en conjunto ------------
+
+    } else if(tmp.indexOf("goHome",0)>-1) // Se ejecuta el comando de goHome()
+      goHome();
+    else if(tmp.indexOf("moveToAngles",0)>-1){  // Se debe mover el robot a unas posiciones angulares especificadas
+      
+      parseParameters(tmp,values);  // Se filtran los parámetros
+
+      moveToAngles(stringToFloat(values[0]),stringToFloat(values[1]),stringToFloat(values[2]));  // Se ejecuta la función
+      
+    } else if(tmp.indexOf("moveToPoint",0)>-1){ // Se debe mover el robot a unas coordenadas específicas
+      // Se realiza el mismo proceso que con moveToAngles
+      
+      parseParameters(tmp,values);  // Se filtran los parámetros
+
+      moveToPoint(stringToFloat(values[0]),stringToFloat(values[1]),stringToFloat(values[2]));  // Se ejecuta la función
+     
+
+    // ------------ Comandos para realizar cálculos cinemáticos ------------
+
+    } else if(tmp.indexOf("forwardKinematics",0)>-1) {  // Se calcula la cinemática directa del robot a partir de unas posiciones angulares específicas
+      // Se realiza el mismo proceso que con las llamadas anteriores
+
+      parseParameters(tmp,values);  // Se filtran los parámetros
+
+      Vector3 forward = forwardKinematics(stringToFloat(values[0]),stringToFloat(values[1]),stringToFloat(values[2]));  // Se ejecuta la función
+
+      String Message = "The result of the forward kinematic is: " + forward.x + ", " + forward.y + ", " + forward.z + ")";  // Se genera el mensaje que contiene los resultados
+      Serial.println(Message);  // Se imprime
+
+    } else if(tmp.indexOf("inverseKinematics",0)>-1) {  // Se calcula la cinemática directa del robot a partir de unas posiciones angulares específicas
+      // Se realiza el mismo proceso que con las llamadas anteriores
+
+      parseParameters(tmp,values);  // Se filtran los parámetros
+
+      Vector3 inverse = inverseKinematics(stringToFloat(values[0]),stringToFloat(values[1]),stringToFloat(values[2]));  // Se ejecuta la función
+
+      String Message = "The result of the inverse kinematic is: " + inverse.x + ", " + inverse.y + ", " + inverse.z + ")";  // Se genera el mensaje que contiene los resultados
+      Serial.println(Message);  // Se imprime
+
+
+    // ------------ Comando para realizar la tarea del pick&place ------------
+    
+    } else if((tmp.indexOf("pick",0)>-1) || (tmp.indexOf("place",0)>-1) || (tmp.indexOf("tarea",0)>-1) || (tmp.indexOf("&",0)>-1)){
+      pick_and_place();
     
     //******* Edición del parse buffer para el pick&place *******
-    else if((tmp.indexOf("coord",0)>-1) || (tmp.indexOf("cart",0)>-1) || (tmp.indexOf("cord",0)>-1))  // El usuario debe introducir las coordenadas cartesianas en la tarea específica
+    } else if((tmp.indexOf("coord",0)>-1) || (tmp.indexOf("cart",0)>-1) || (tmp.indexOf("cord",0)>-1))  // El usuario debe introducir las coordenadas cartesianas en la tarea específica
       cart = true;
     else if((tmp.indexOf("ang",0)>-1) || (tmp.indexOf("pos",0)>-1))  // El usuario debe introducir las posiciones articulares en la tarea específica
       cart = false;
@@ -1019,4 +1077,16 @@ bool Answer(){
 
   buffer = "";
   return answer;
+}
+
+// Filtra los parámetros pasados a las llamadas utilizadas en el parseBuffer
+void parseParameters(String tmp, String* values){
+  int index = tmp.indexOf(",",0)+1; // Nos situamos en el índice sigiente de la coma
+  
+  values[0] = tmp.substring(8, tmp.indexOf(",",0)); // Se guarda el primer parámetro
+  values[1] = tmp.substring(index,tmp.indexOf(",",index));  // Se guarda el segundo parámetro
+  if(tmp.indexOf(")",0)>-1) // Si se ha introducido el cierre de paréntesis
+    values[2] = tmp.substring(tmp.indexOf(",",index)+1,tmp.indexOf(")",0)); // Se guardael último parámetro, quitando el paréntesis
+  else  // Si no
+    values[2] = tmp.substring(tmp.indexOf(",",index)+1,tmp.length()); // No se filtra el paréntesis
 }
