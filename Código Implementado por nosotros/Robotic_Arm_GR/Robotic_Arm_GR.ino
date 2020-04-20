@@ -624,7 +624,11 @@ void trajectory (float q1, float q2, float q3, float t){
 
   // Establecemos las velocidades y aceleraciones del robot
   for(int i=0;i<3;i++){
-    steppers[i].setSpeed(trajectSpeed[i]);
+    if (trajectSpeed[i] <= maxSpeed) // Si la velocidad calculada es menor o igual a la máxima, establece esta
+      steppers[i].setSpeed(trajectSpeed[i]);
+    else  // Si no, establece la máxima
+      steppers[i].setSpeed(maxSpeed);
+      
     steppers[i].setAcceleration(trajectAccel[i]);
   }
 
