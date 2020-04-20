@@ -423,6 +423,8 @@ void goHome(){
 //Cinemática directa. Movimiento en q1,q2,q3, en grados
 void move_q1(float q1){
 
+  float Steps = q1*GEAR_1*STEPS/1.8;
+  
   if ( (q1 <= qlimit_0[1]) && (q1 >= qlimit_0[0])){   //Límite qlim = [-90,90]
 
     if(q1<0.0)
@@ -430,14 +432,15 @@ void move_q1(float q1){
     else
       steppers[0].setSpeed(currentSpeed);
 
-    move_steps(0,q1*GEAR_1*STEPS/1.8);
-    steppers[0].setCurrentPosition(q1*GEAR_1*STEPS/1.8); //o q1/1.8?
-    //delay(2000); No se si hay que ponerlo
+    steppers[0].moveTosteps(Steps);
+    lastPositions[0] = Steps;
   }
 }
 
 void move_q2(float q2){
-
+    
+    float Steps = q2*GEAR_2*STEPS/1.8;  
+  
     if ( (q2 <= qlimit_1[0]) && (q2 >= qlimit_1[1])){   //Límite qlimit = [+,-]
 
     if(q2<0.0)
@@ -445,14 +448,15 @@ void move_q2(float q2){
     else
       steppers[1].setSpeed(currentSpeed);
 
-    move_steps(1,q2*GEAR_2*STEPS/1.8);
-    steppers[1].setCurrentPosition(q2*GEAR_2*STEPS/1.8);
-    //delay(2000); No se si hay que ponerlo
-  }
+      steppers[1].moveTosteps(Steps);
+      lastPositions[1] = Steps;
+    }
 }
 
 void move_q3(float q3){
 
+    float Steps = q3*GEAR_2*STEPS/1.8;
+  
     if ( (q3 <= qlimit_2[0]) && (q3 >= qlimit_2[1])){   //Límite qlimit = [+,-]
 
     if(q3<0.0)
@@ -460,9 +464,8 @@ void move_q3(float q3){
     else
       steppers[2].setSpeed(currentSpeed);
 
-    move_steps(2,q3*GEAR_2*STEPS/1.8);
-    steppers[2].setCurrentPosition(q3*GEAR_2*STEPS/1.8);
-    //delay(2000);
+      steppers[2].moveTosteps(Steps);
+      lastPositions[2] = Steps;
   }
 }
 
