@@ -766,6 +766,11 @@ void defaultPick(){
       case 7:
         // Se vuelve al home
         goHome();
+        break;
+
+      case 8:
+        // Se cierra la pinza para evitar que se abra en exceso en la realización de la siguiente tarea
+        close_grip();
         done = true;
         break;
 
@@ -890,7 +895,13 @@ void designedPick(){
             break;
 
           case 7:
-            goHome(); // Se vuelve al home
+            // Se vuelve al home
+            goHome();
+            break;
+
+          case 8:
+            // Se cierra la pinza para evitar que se abra en exceso en la realización de la siguiente tarea
+            close_grip();
             done = true;
             break;
 
@@ -938,7 +949,13 @@ void designedPick(){
             break;
 
           case 6:
-            goHome(); // Se vuelve al home
+            // Se vuelve al home
+            goHome();
+            break;
+
+          case 7:
+            // Se cierra la pinza para evitar que se abra en exceso en la realización de la siguiente tarea
+            close_grip();
             done = true;
             break;
 
@@ -1040,7 +1057,13 @@ void designedPick(){
             break;
 
           case 7:
-            goHome(); // Se vuelve al home
+            // Se vuelve al home
+            goHome();
+            break;
+
+          case 8:
+            // Se cierra la pinza para evitar que se abra en exceso en la realización de la siguiente tarea
+            close_grip();
             done = true;
             break;
 
@@ -1086,7 +1109,13 @@ void designedPick(){
             break;
 
           case 6:
-            goHome(); // Se vuelve al home
+            // Se vuelve al home
+            goHome();
+            break;
+
+          case 7:
+            // Se cierra la pinza para evitar que se abra en exceso en la realización de la siguiente tarea
+            close_grip();
             done = true;
             break;
 
