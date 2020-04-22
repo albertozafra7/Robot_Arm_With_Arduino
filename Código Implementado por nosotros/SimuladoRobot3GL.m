@@ -1,5 +1,5 @@
 %% Setup
-
+%Generamos la tabla de Denavit Hartenberg
 L1=Link([0 150 0 pi/2]);L1.qlim = [-pi/2 pi/2];
 L2=Link([0 0 155 0]);L2.offset=pi/2;
 L3=Link([0 0 200 0]);
@@ -17,6 +17,7 @@ T=robot.fkine(q);
 Q=robot.ikunc(T);
 
 %% Trajectories
+%Se simula la trayectoria por defecto
 q_1 = [deg2rad(67.2) deg2rad(73.5) deg2rad(53.2)];
 
 q_2 = [deg2rad(31.7) deg2rad(22.8) deg2rad(-17.7)];
