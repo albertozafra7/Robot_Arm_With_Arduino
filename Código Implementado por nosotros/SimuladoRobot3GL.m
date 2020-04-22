@@ -1,7 +1,7 @@
 %% Setup
 %Generamos la tabla de Denavit Hartenberg
-L1=Link([0 150 0 pi/2]);L1.qlim = [-pi/2 pi/2];
-L2=Link([0 0 155 0]);L2.offset=pi/2;
+L1=Link([0 150 0 -pi/2]);L1.qlim = [-pi/2 pi/2];
+L2=Link([0 0 155 0]);L2.offset=-pi/2;
 L3=Link([0 0 200 0]);
 
 L=[L1 L2 L3];
