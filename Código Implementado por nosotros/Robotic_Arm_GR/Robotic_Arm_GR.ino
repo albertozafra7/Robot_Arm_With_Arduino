@@ -632,9 +632,8 @@ Vector3 inverseKinematics(float x,float y,float z){
 void trajectory (float q1, float q2, float q3, float t){
   // Generamos las variables que guardaran las posiciones actuales de los ejes
   float pos[3];
-  pos[0] = steppers[0].currentPosition();
-  pos[1] = steppers[1].currentPosition();
-  pos[2] = steppers[2].currentPosition();
+  for(int i = 0; i < 3; i++)
+    pos[i] = steppers[i].currentPosition();
 
   // Calculamos las velocidades
   float trajectSpeed[3];
@@ -644,9 +643,9 @@ void trajectory (float q1, float q2, float q3, float t){
 
   // Calculamos las aceleraciones
   float trajectAccel[3];
-  trajectAccel[0] = trajectSpeed[0]/t;
-  trajectAccel[1] = trajectSpeed[1]/t;
-  trajectAccel[2] = trajectSpeed[2]/t;
+  for(int i = 0; i < 3; i++)
+    trajectAccel[i] = (currentSpeed-trajectSpeed[i])/t;
+
 
   // Establecemos las velocidades y aceleraciones del robot
   for(int i=0;i<3;i++){
@@ -731,41 +730,54 @@ void defaultPick(){
       case 0:
         // Se posiciona el robot en el home
         goHome();
+        if(endMoving) // Si se ha finalizado la trayectoria
+           Case++;  // Se actualiza la máquina de estados
         break;
         
       case 1:
         // Se abre la pinza
         open_grip();
+        Case++; // Se actualiza la máquina de estados
         break;
 
       case 2:
         // Se posiciona el robot en la posición donde tiene que coger el objeto, tiene que llegar en 5s
         trajectory(q_origin.x,q_origin.y,q_origin.z,5);
+        if(endMoving) // Si se ha finalizado la trayectoria
+           Case++;  // Se actualiza la máquina de estados
         break;
 
       case 3:
         // Se coge el objeto con la pinza
         close_grip();
+        Case++; // Se actualiza la máquina de estados
         break;
 
       case 4:
         // Se posiciona el robot en el punto intermedio
         trajectory(q_step.x,q_step.y,q_step.z,5);
+        if(endMoving) // Si se ha finalizado la trayectoria
+           Case++;  // Se actualiza la máquina de estados
         break;
 
       case 5:
         // Se posiciona el robot en el punto final
         trajectory(q_final.x,q_final.y,q_final.z,5);
+        if(endMoving) // Si se ha finalizado la trayectoria
+           Case++;  // Se actualiza la máquina de estados
         break;
 
       case 6:
         // Se coloca el objeto
         open_grip();
+        Case++; // Se actualiza la máquina de estados
         break;
 
       case 7:
         // Se vuelve al home
         goHome();
+        if(endMoving) // Si se ha finalizado la trayectoria
+           Case++;  // Se actualiza la máquina de estados
         break;
 
       case 8:
@@ -778,9 +790,6 @@ void defaultPick(){
         Serial.println("Error");
         break;
     }
-
-    //if(!steppers[0]._moving && !steppers[1]._moving && !steppers[2]._moving)  // ¿Se actualiza _moving en algún momento?
-      Case++;
   }
   
   
@@ -865,38 +874,54 @@ void designedPick(){
         switch(Case){
           case 0:
             goHome(); // Nos situamos en el home
+            if(endMoving) // Si se ha finalizado la trayectoria
+              Case++;  // Se actualiza la máquina de estados
             break;
 
           case 1:
             open_grip();  // Abrimos la pinza
+            Case++; // Se actualiza la máquina de estados
             break;
 
           case 2:
             // Vamos a la posición donde se debe coger el objeto
             trajectory(inverseKinematics(origin.x,origin.y,origin.z),5);
+            if(endMoving) // Si se ha finalizado la trayectoria
+              Case++;  // Se actualiza la máquina de estados
             break;
 
           case 3:
             close_grip(); // Cerramos la pinza
+            Case++; // Se actualiza la máquina de estados
             break;
 
           case 4:
-            for(size_t i = 0; i < count; i++) // Pasamos por las posiciones intermedias
+            size_t i = 0; // Se genera la variable que se va a ussar como contador
+            while(i < count) { // Pasamos por las posiciones intermedias
               trajectory(inverseKinematics(Passes[i].x,Passes[i].y,Passes[i].z),5);
+              if(endMoving) // Si se ha finalizado la trayectoria
+                  i++;  // Se incrementa i
+            }
+            Case++; // Se actualiza la máquina de estados
             break;
 
           case 5:
             // Nos situamos en la posición final
             trajectory(inverseKinematics(finalpos.x,finalpos.y,finalpos.z),5);
+            if(endMoving) // Si se ha finalizado la trayectoria
+              Case++;  // Se actualiza la máquina de estados
             break;
 
           case 6:
             open_grip();  // Se coloca el objeto
+            Case++; // Se actualiza la máquina de estados
             break;
 
           case 7:
             // Se vuelve al home
             goHome();
+            if(endMoving) // Si se ha finalizado la trayectoria
+              Case++;  // Se actualiza la máquina de estados
             break;
 
           case 8:
@@ -909,8 +934,6 @@ void designedPick(){
             Serial.println("Error");
             break;
         }
-
-        Case++;
       }
 
       // Liberamos todo lo contenido en el array de puntos intermedios
@@ -924,33 +947,44 @@ void designedPick(){
         switch(Case){
           case 0:
             goHome(); // Nos situamos en el home
+            if(endMoving) // Si se ha finalizado la trayectoria
+              Case++;  // Se actualiza la máquina de estados
             break;
 
           case 1:
             open_grip();  // Abrimos la pinza
+            Case++; // Se actualiza la máquina de estados
             break;
 
           case 2:
             // Vamos a la posición donde se debe coger el objeto
             trajectory(inverseKinematics(origin.x,origin.y,origin.z),5);
+            if(endMoving) // Si se ha finalizado la trayectoria
+              Case++;  // Se actualiza la máquina de estados
             break;
 
           case 3:
             close_grip(); // Cerramos la pinza
+            Case++; // Se actualiza la máquina de estados
             break;
 
           case 4:
             // Nos situamos en la posición final
             trajectory(inverseKinematics(finalpos.x,finalpos.y,finalpos.z),5);
+            if(endMoving) // Si se ha finalizado la trayectoria
+              Case++;  // Se actualiza la máquina de estados
             break;
 
           case 5:
             open_grip();  // Se coloca el objeto
+            Case++; // Se actualiza la máquina de estados
             break;
 
           case 6:
             // Se vuelve al home
             goHome();
+            if(endMoving) // Si se ha finalizado la trayectoria
+              Case++;  // Se actualiza la máquina de estados
             break;
 
           case 7:
@@ -963,7 +997,6 @@ void designedPick(){
             Serial.println("Error");
             break;
         }
-        Case++;
       }
     }
 
@@ -1027,38 +1060,54 @@ void designedPick(){
         switch(Case){
           case 0:
             goHome(); // Nos situamos en el home
+            if(endMoving) // Si se ha finalizado la trayectoria
+              Case++;  // Se actualiza la máquina de estados
             break;
 
           case 1:
             open_grip();  // Abrimos la pinza
+            Case++; // Se actualiza la máquina de estados
             break;
 
           case 2:
             // Vamos a la posición donde se debe coger el objeto
             trajectory(origin.x,origin.y,origin.z,5);
+            if(endMoving) // Si se ha finalizado la trayectoria
+              Case++;  // Se actualiza la máquina de estados
             break;
 
           case 3:
             close_grip(); // Cerramos la pinza
+            Case++; // Se actualiza la máquina de estados
             break;
 
           case 4:
-            for(size_t i = 0; i < count; i++) // Pasamos por las posiciones intermedias
+            size_t i = 0; // Generamos la variable que va a servir de contador
+            while(i < count){ // Pasamos por las posiciones intermedias
               trajectory(Passes[i].x,Passes[i].y,Passes[i].z,5);
+              if(endMoving) // Si se ha finalizado la trayectoria
+                i++;  // Se incrementa el contador
+            }
+            Case++; // Se actualiza la máquina de estados
             break;
 
           case 5:
             // Nos situamos en la posición final
             trajectory(finalpos.x,finalpos.y,finalpos.z,5);
+            if(endMoving) // Si se ha finalizado la trayectoria
+              Case++;  // Se actualiza la máquina de estados
             break;
 
           case 6:
             open_grip();  // Se coloca el objeto
+            Case++; // Se actualiza la máquina de estados
             break;
 
           case 7:
             // Se vuelve al home
             goHome();
+            if(endMoving) // Si se ha finalizado la trayectoria
+              Case++;  // Se actualiza la máquina de estados
             break;
 
           case 8:
@@ -1071,7 +1120,6 @@ void designedPick(){
             Serial.println("Error");
             break; 
         }
-        Case++;
       }
 
       size_t j = count; // Guardamos una copia del count
@@ -1084,33 +1132,44 @@ void designedPick(){
         switch(Case){
           case 0:
             goHome(); // Nos situamos en el home
+            if(endMoving) // Si se ha finalizado la trayectoria
+              Case++;  // Se actualiza la máquina de estados
             break;
 
           case 1:
             open_grip();  // Abrimos la pinza
+            Case++; // Se actualiza la máquina de estados
             break;
 
           case 2:
             // Vamos a la posición donde se debe coger el objeto
             trajectory(origin.x,origin.y,origin.z,5);
+            if(endMoving) // Si se ha finalizado la trayectoria
+              Case++;  // Se actualiza la máquina de estados
             break;
 
           case 3:
             close_grip(); // Cerramos la pinza
+            Case++; // Se actualiza la máquina de estados
             break;
 
           case 4:
             // Nos situamos en la posición final
             trajectory(finalpos.x,finalpos.y,finalpos.z,5);
+            if(endMoving) // Si se ha finalizado la trayectoria
+              Case++;  // Se actualiza la máquina de estados
             break;
 
           case 5:
             open_grip();  // Se coloca el objeto
+            Case++; // Se actualiza la máquina de estados
             break;
 
           case 6:
             // Se vuelve al home
             goHome();
+            if(endMoving) // Si se ha finalizado la trayectoria
+              Case++;  // Se actualiza la máquina de estados
             break;
 
           case 7:
@@ -1123,7 +1182,6 @@ void designedPick(){
             Serial.println("Error");
             break;
         }
-        Case++;
       }
     }
   }
@@ -1237,9 +1295,8 @@ void Trim(size_t count, Vector3* Passes, size_t* capacity){
 void trajectory (Vector3 q, float t){
   // Generamos las variables que guardaran las posiciones actuales de los ejes
   float pos[3];
-  pos[0] = steppers[0].currentPosition();
-  pos[1] = steppers[1].currentPosition();
-  pos[2] = steppers[2].currentPosition();
+  for(int i = 0; i < 3; i++)
+    pos[i] = steppers[i].currentPosition();
 
   // Calculamos las velocidades
   float trajectSpeed[3];
@@ -1249,9 +1306,8 @@ void trajectory (Vector3 q, float t){
 
   // Calculamos las aceleraciones
   float trajectAccel[3];
-  trajectAccel[0] = trajectSpeed[0]/t;
-  trajectAccel[1] = trajectSpeed[1]/t;
-  trajectAccel[2] = trajectSpeed[2]/t;
+  for(int i = 0; i < 3; i++)
+    trajectAccel[i] = (currentSpeed-trajectSpeed[i])/t;
 
   // Establecemos las velocidades y aceleraciones del robot
   for(int i=0;i<3;i++){
